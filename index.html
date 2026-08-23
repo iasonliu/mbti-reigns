@@ -7,17 +7,14 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <!-- Curated Font Stack: Cinzel (Gilded Western Titling) + Cormorant Garamond (Tarot Editorial) + Noto Serif SC (Imperial Chinese Serif) -->
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Cormorant+Garamond:ital,wght@0,500;0,700;1,600&family=Noto+Serif+SC:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Cormorant+Garamond:ital,wght@0,600;1,700&family=Noto+Serif+SC:wght@500;700;900&display=swap" rel="stylesheet">
 
   <style>
     :root {
-      --bg-dark: #07080c;
-      --gold-primary: #f59e0b;
-      --gold-bright: #fef08a;
-      --gold-dark: #854d0e;
-      --crimson: #dc2626;
-      --emerald: #059669;
+      --bg-dark: #06070a;
+      --gold: #d4af37;
+      --gold-light: #fef08a;
+      --gold-glow: rgba(212, 175, 55, 0.4);
     }
     * {
       box-sizing: border-box;
@@ -29,20 +26,18 @@
     body {
       background-color: var(--bg-dark);
       color: #f1f5f9;
-      font-family: 'Noto Serif SC', "Songti SC", "Source Han Serif SC", SimSun, serif;
+      font-family: 'Noto Serif SC', "Source Han Serif SC", SimSun, serif;
       overflow: hidden;
       margin: 0;
       padding: 0;
       height: 100vh;
       height: 100dvh;
       -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
     }
     .font-cinzel { font-family: 'Cinzel', serif; }
     .font-cormorant { font-family: 'Cormorant Garamond', serif; }
-    .font-cn-serif { font-family: 'Noto Serif SC', serif; }
 
-    /* Ambient Ember WebGL/Canvas */
+    /* Canvas background */
     #ember-canvas {
       position: fixed;
       inset: 0;
@@ -52,7 +47,7 @@
       z-index: 1;
     }
 
-    /* Film Grain Layer (ThreeUI Texture) */
+    /* Film grain */
     .grain-overlay {
       position: fixed;
       inset: 0;
@@ -62,7 +57,7 @@
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
     }
 
-    /* 3D Perspective Container */
+    /* 3D Perspective Stage */
     .stage-container {
       perspective: 1200px;
       transform-style: preserve-3d;
@@ -76,93 +71,92 @@
       transform-style: preserve-3d;
       transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease;
       will-change: transform, box-shadow;
-      border-radius: 24px;
-      background: linear-gradient(170deg, #181524 0%, #0d0b16 50%, #080610 100%);
-      box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.95), 
-                  0 0 0 1.5px rgba(245, 158, 11, 0.45), 
-                  inset 0 0 35px rgba(0, 0, 0, 0.85);
+      border-radius: 20px;
+      background: linear-gradient(175deg, #161424 0%, #0d0b16 60%, #06050a 100%);
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.95), 
+                  0 0 0 1px rgba(212, 175, 55, 0.45), 
+                  inset 0 0 40px rgba(0, 0, 0, 0.9);
     }
 
-    /* Holographic Specular Glint */
+    /* Holographic Foil Layer */
     .card-foil {
       position: absolute;
       inset: 0;
-      border-radius: 24px;
+      border-radius: 20px;
       pointer-events: none;
       background: radial-gradient(circle at var(--foil-x, 50%) var(--foil-y, 50%), 
-                  rgba(254, 240, 138, 0.28) 0%, 
-                  rgba(245, 158, 11, 0.12) 35%, 
+                  rgba(254, 240, 138, 0.25) 0%, 
+                  rgba(212, 175, 55, 0.08) 35%, 
                   rgba(0, 0, 0, 0) 70%);
       mix-blend-mode: color-dodge;
       z-index: 12;
-      opacity: 0.85;
-      transition: opacity 0.2s ease;
+      opacity: 0.9;
     }
 
-    /* Gilded Frame & Corner Ornaments */
+    /* Gilded Frame Ornaments */
     .card-border-ornament {
       position: absolute;
-      inset: 8px;
-      border-radius: 16px;
-      border: 1px solid rgba(245, 158, 11, 0.35);
+      inset: 7px;
+      border-radius: 14px;
+      border: 1px solid rgba(212, 175, 55, 0.3);
       pointer-events: none;
-      box-shadow: inset 0 0 16px rgba(245, 158, 11, 0.12);
+      box-shadow: inset 0 0 15px rgba(212, 175, 55, 0.08);
       z-index: 10;
     }
     .card-corner {
       position: absolute;
-      width: 14px;
-      height: 14px;
+      width: 12px;
+      height: 12px;
       border-color: #fbbf24;
       pointer-events: none;
       z-index: 11;
     }
-    .card-corner-tl { top: 12px; left: 12px; border-top: 2px solid; border-left: 2px solid; }
-    .card-corner-tr { top: 12px; right: 12px; border-top: 2px solid; border-right: 2px solid; }
-    .card-corner-bl { bottom: 12px; left: 12px; border-bottom: 2px solid; border-left: 2px solid; }
-    .card-corner-br { bottom: 12px; right: 12px; border-bottom: 2px solid; border-right: 2px solid; }
+    .card-corner-tl { top: 10px; left: 10px; border-top: 2px solid; border-left: 2px solid; }
+    .card-corner-tr { top: 10px; right: 10px; border-top: 2px solid; border-right: 2px solid; }
+    .card-corner-bl { bottom: 10px; left: 10px; border-bottom: 2px solid; border-left: 2px solid; }
+    .card-corner-br { bottom: 10px; right: 10px; border-bottom: 2px solid; border-right: 2px solid; }
 
-    /* Sanctuary Fluid Meters */
+    /* Sanctuary Fluid Meters with Wave Effect */
     .meter-capsule {
       position: relative;
-      background: radial-gradient(circle, #1a162b 0%, #0c0a14 100%);
-      border: 1.5px solid rgba(245, 158, 11, 0.4);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.6), inset 0 2px 4px rgba(0,0,0,0.8);
+      background: radial-gradient(circle, #191628 0%, #0b0914 100%);
+      border: 1.5px solid rgba(212, 175, 55, 0.45);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.7), inset 0 2px 4px rgba(0,0,0,0.8);
     }
     .meter-fluid {
-      transition: height 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      transition: height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
 
     /* Resonance Light Rays */
     .resonance-ray {
       position: absolute;
-      bottom: -16px;
+      bottom: -15px;
       left: 50%;
       transform: translateX(-50%);
-      width: 4px;
+      width: 3px;
       height: 0px;
       background: linear-gradient(to bottom, #fcd34d, transparent);
       filter: drop-shadow(0 0 8px #f59e0b);
       opacity: 0;
-      transition: all 0.25s ease;
+      transition: all 0.2s ease;
       pointer-events: none;
     }
     .resonance-ray.active {
-      height: 28px;
+      height: 25px;
       opacity: 1;
     }
 
     /* Decision Stamps */
     .choice-stamp {
       position: absolute;
-      top: 26px;
-      padding: 8px 18px;
-      border: 2.5px solid;
-      border-radius: 12px;
+      top: 25px;
+      padding: 6px 14px;
+      border: 2px solid;
+      border-radius: 10px;
       font-family: 'Cinzel', 'Noto Serif SC', serif;
       font-weight: 900;
-      font-size: 1.15rem;
-      letter-spacing: 0.12em;
+      font-size: 1.1rem;
+      letter-spacing: 0.1em;
       pointer-events: none;
       z-index: 30;
       opacity: 0;
@@ -170,43 +164,33 @@
       transition: transform 0.1s ease, opacity 0.1s ease;
     }
     .stamp-left {
-      right: 18px;
-      transform: rotate(14deg) scale(0.9);
+      right: 16px;
+      transform: rotate(12deg) scale(0.9);
       color: #f87171;
       border-color: #ef4444;
-      background: rgba(45, 12, 18, 0.9);
+      background: rgba(45, 10, 15, 0.92);
       box-shadow: 0 0 25px rgba(239, 68, 68, 0.6);
-      text-shadow: 0 0 8px rgba(248, 113, 113, 0.7);
+      text-shadow: 0 0 8px rgba(248, 113, 113, 0.8);
     }
     .stamp-right {
-      left: 18px;
-      transform: rotate(-14deg) scale(0.9);
+      left: 16px;
+      transform: rotate(-12deg) scale(0.9);
       color: #34d399;
       border-color: #10b981;
-      background: rgba(8, 38, 28, 0.9);
+      background: rgba(6, 38, 26, 0.92);
       box-shadow: 0 0 25px rgba(16, 185, 129, 0.6);
-      text-shadow: 0 0 8px rgba(52, 211, 153, 0.7);
+      text-shadow: 0 0 8px rgba(52, 211, 153, 0.8);
     }
 
-    /* Alchemical Geometry Spin */
-    @keyframes spinSlow {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-    .alchemy-spin { animation: spinSlow 36s linear infinite; }
-    .alchemy-spin-reverse { animation: spinSlow 44s linear infinite reverse; }
+    /* Alchemical Ring Rotation */
+    @keyframes spinSlow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    .alchemy-spin { animation: spinSlow 40s linear infinite; }
+    .alchemy-spin-reverse { animation: spinSlow 50s linear infinite reverse; }
 
-    /* Gold Text Glow */
-    .gold-gradient-text {
-      background: linear-gradient(135deg, #fef08a 0%, #f59e0b 50%, #b45309 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    /* Pulsing Light */
+    /* Pulse Glow */
     @keyframes runePulse {
-      0%, 100% { filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.5)); }
-      50% { filter: drop-shadow(0 0 16px rgba(251, 191, 36, 0.9)); }
+      0%, 100% { filter: drop-shadow(0 0 6px rgba(212, 175, 55, 0.4)); }
+      50% { filter: drop-shadow(0 0 16px rgba(254, 240, 138, 0.85)); }
     }
     .rune-pulse { animation: runePulse 3s infinite ease-in-out; }
   </style>
@@ -218,23 +202,23 @@
   <div class="grain-overlay"></div>
 
   <!-- ==================== TOP BAR: REALM PILLARS ==================== -->
-  <header class="w-full max-w-sm pt-4 px-3.5 z-20 flex flex-col gap-2.5">
+  <header class="w-full max-w-sm pt-3 px-3 z-20 flex flex-col gap-2">
     
     <!-- Title & Chronicle Header -->
     <div class="flex justify-between items-center px-1">
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1.5">
         <svg class="w-4 h-4 text-amber-400 rune-pulse" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
         </svg>
-        <span class="font-cinzel text-xs font-black tracking-[0.2em] text-amber-200 uppercase drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+        <span class="font-cinzel text-xs font-black tracking-[0.2em] text-amber-200 uppercase drop-shadow">
           Reigns of Persona
         </span>
       </div>
       
-      <!-- Round Progress Capsule -->
-      <div class="bg-black/70 border border-amber-500/30 backdrop-blur-md px-3 py-0.5 rounded-full flex items-center gap-1.5 shadow-inner">
+      <!-- Round Progress -->
+      <div class="bg-black/70 border border-amber-500/30 backdrop-blur-md px-2.5 py-0.5 rounded-full flex items-center gap-1.5 shadow-inner">
         <div class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></div>
-        <span class="font-cinzel text-[11px] font-bold tracking-wider text-amber-300" id="turn-counter">CHRONICLE 1/15</span>
+        <span class="font-cinzel text-[11px] font-bold tracking-wider text-amber-300" id="turn-counter">1/15</span>
       </div>
     </div>
 
@@ -244,19 +228,17 @@
       <!-- Pillar 1: E <-> I (神火与静夜) -->
       <div class="flex flex-col items-center gap-1 relative group">
         <div class="meter-capsule w-11 h-11 rounded-full overflow-hidden flex items-center justify-center relative">
-          <div id="meter-fluid-ei" class="meter-fluid absolute bottom-0 left-0 w-full bg-gradient-to-t from-violet-700 via-indigo-500 to-amber-400 opacity-80" style="height: 50%;"></div>
+          <div id="meter-fluid-ei" class="meter-fluid absolute bottom-0 left-0 w-full bg-gradient-to-t from-violet-700 via-indigo-500 to-amber-400 opacity-85" style="height: 50%;"></div>
           <svg class="w-5 h-5 text-amber-200 relative z-10 drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="5"/>
-            <line x1="12" y1="1" x2="12" y2="3"/>
-            <line x1="12" y1="21" x2="12" y2="23"/>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
           </svg>
           <div id="ind-ei" class="absolute -top-1 w-2 h-2 rounded-full bg-amber-300 opacity-0 transition-opacity"></div>
         </div>
         <div class="flex justify-between w-full px-0.5 text-[9px] font-cinzel font-black text-amber-300">
           <span>E</span>
-          <span class="text-[8px] text-slate-400 font-cn-serif">神火</span>
+          <span class="text-[8px] text-slate-400 font-serif">神火</span>
           <span>I</span>
         </div>
         <div id="ray-ei" class="resonance-ray"></div>
@@ -265,7 +247,7 @@
       <!-- Pillar 2: S <-> N (全知之眼) -->
       <div class="flex flex-col items-center gap-1 relative group">
         <div class="meter-capsule w-11 h-11 rounded-full overflow-hidden flex items-center justify-center relative">
-          <div id="meter-fluid-sn" class="meter-fluid absolute bottom-0 left-0 w-full bg-gradient-to-t from-emerald-700 via-teal-500 to-amber-300 opacity-80" style="height: 50%;"></div>
+          <div id="meter-fluid-sn" class="meter-fluid absolute bottom-0 left-0 w-full bg-gradient-to-t from-emerald-700 via-teal-500 to-amber-300 opacity-85" style="height: 50%;"></div>
           <svg class="w-5 h-5 text-amber-200 relative z-10 drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
             <circle cx="12" cy="12" r="3"/>
@@ -274,7 +256,7 @@
         </div>
         <div class="flex justify-between w-full px-0.5 text-[9px] font-cinzel font-black text-amber-300">
           <span>S</span>
-          <span class="text-[8px] text-slate-400 font-cn-serif">真视</span>
+          <span class="text-[8px] text-slate-400 font-serif">真视</span>
           <span>N</span>
         </div>
         <div id="ray-sn" class="resonance-ray"></div>
@@ -283,19 +265,17 @@
       <!-- Pillar 3: T <-> F (正义天平) -->
       <div class="flex flex-col items-center gap-1 relative group">
         <div class="meter-capsule w-11 h-11 rounded-full overflow-hidden flex items-center justify-center relative">
-          <div id="meter-fluid-tf" class="meter-fluid absolute bottom-0 left-0 w-full bg-gradient-to-t from-rose-800 via-pink-600 to-amber-400 opacity-80" style="height: 50%;"></div>
+          <div id="meter-fluid-tf" class="meter-fluid absolute bottom-0 left-0 w-full bg-gradient-to-t from-rose-800 via-pink-600 to-amber-400 opacity-85" style="height: 50%;"></div>
           <svg class="w-5 h-5 text-amber-200 relative z-10 drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
             <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
-            <path d="M7 21h10"/>
-            <path d="M12 3v18"/>
-            <path d="M3 7h18"/>
+            <path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h18"/>
           </svg>
           <div id="ind-tf" class="absolute -top-1 w-2 h-2 rounded-full bg-amber-300 opacity-0 transition-opacity"></div>
         </div>
         <div class="flex justify-between w-full px-0.5 text-[9px] font-cinzel font-black text-amber-300">
           <span>T</span>
-          <span class="text-[8px] text-slate-400 font-cn-serif">天平</span>
+          <span class="text-[8px] text-slate-400 font-serif">天平</span>
           <span>F</span>
         </div>
         <div id="ray-tf" class="resonance-ray"></div>
@@ -304,10 +284,9 @@
       <!-- Pillar 4: J <-> P (秩序沙漏) -->
       <div class="flex flex-col items-center gap-1 relative group">
         <div class="meter-capsule w-11 h-11 rounded-full overflow-hidden flex items-center justify-center relative">
-          <div id="meter-fluid-jp" class="meter-fluid absolute bottom-0 left-0 w-full bg-gradient-to-t from-amber-800 via-yellow-600 to-amber-200 opacity-80" style="height: 50%;"></div>
+          <div id="meter-fluid-jp" class="meter-fluid absolute bottom-0 left-0 w-full bg-gradient-to-t from-amber-800 via-yellow-600 to-amber-200 opacity-85" style="height: 50%;"></div>
           <svg class="w-5 h-5 text-amber-200 relative z-10 drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M5 22h14"/>
-            <path d="M5 2h14"/>
+            <path d="M5 22h14"/><path d="M5 2h14"/>
             <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/>
             <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/>
           </svg>
@@ -315,7 +294,7 @@
         </div>
         <div class="flex justify-between w-full px-0.5 text-[9px] font-cinzel font-black text-amber-300">
           <span>J</span>
-          <span class="text-[8px] text-slate-400 font-cn-serif">沙漏</span>
+          <span class="text-[8px] text-slate-400 font-serif">沙漏</span>
           <span>P</span>
         </div>
         <div id="ray-jp" class="resonance-ray"></div>
@@ -328,7 +307,7 @@
   <main class="w-full max-w-sm flex-1 flex flex-col items-center justify-center relative px-3 stage-container my-auto">
 
     <!-- The Interactive 3D Tarot Card -->
-    <div id="active-card" class="tarot-card w-full h-[450px] max-h-[58vh] flex flex-col justify-between p-4 cursor-grab active:cursor-grabbing select-none relative overflow-hidden">
+    <div id="active-card" class="tarot-card w-full h-[450px] max-h-[58vh] flex flex-col justify-between p-3.5 cursor-grab active:cursor-grabbing select-none relative overflow-hidden">
       
       <!-- Holographic Foil Glint -->
       <div id="card-foil" class="card-foil"></div>
@@ -345,41 +324,41 @@
       <div id="stamp-right" class="choice-stamp stamp-right"></div>
 
       <!-- Card Top: Character Title Capsule -->
-      <div class="relative z-20 text-center w-full pt-1 flex flex-col items-center">
-        <div class="inline-flex items-center gap-2 bg-gradient-to-r from-amber-950/70 via-slate-900/95 to-amber-950/70 border border-amber-500/40 px-4 py-1 rounded-full shadow-lg">
+      <div class="relative z-20 text-center w-full pt-0.5 flex flex-col items-center">
+        <div class="inline-flex items-center gap-1.5 bg-gradient-to-r from-amber-950/70 via-slate-900/95 to-amber-950/70 border border-amber-500/40 px-3.5 py-0.5 rounded-full shadow-lg">
           <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
-          <span id="card-speaker" class="font-cinzel text-xs font-black tracking-widest text-amber-300 drop-shadow">
-            IMPERIAL SENTRY
+          <span id="card-speaker" class="font-cinzel text-[11px] font-black tracking-widest text-amber-300 drop-shadow">
+            ROYAL COURT
           </span>
           <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
         </div>
       </div>
 
-      <!-- Card Center: Sacred Alchemical Sanctuary & 3D Character Avatar -->
-      <div class="relative z-10 flex-1 flex items-center justify-center my-2.5 overflow-hidden rounded-2xl border border-amber-500/25 bg-gradient-to-b from-slate-950 via-[#130f24] to-slate-950 shadow-inner group">
+      <!-- Card Center: Sacred Alchemical Sanctuary & High-Density Character Portrait -->
+      <div class="relative z-10 flex-1 flex items-center justify-center my-2 overflow-hidden rounded-xl border border-amber-500/25 bg-gradient-to-b from-slate-950 via-[#130f24] to-slate-950 shadow-inner group">
         
-        <!-- Rotating Alchemical Geometry Background -->
-        <svg class="alchemy-spin absolute w-64 h-64 text-amber-500/15 pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+        <!-- Rotating Alchemical Geometry -->
+        <svg class="alchemy-spin absolute w-60 h-60 text-amber-500/15 pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor">
           <circle cx="50" cy="50" r="46" stroke-width="0.6" stroke-dasharray="2 3"/>
           <polygon points="50,6 88,72 12,72" stroke-width="0.8"/>
           <polygon points="50,94 12,28 88,28" stroke-width="0.8"/>
           <circle cx="50" cy="50" r="28" stroke-width="0.5"/>
         </svg>
 
-        <svg class="alchemy-spin-reverse absolute w-48 h-48 text-indigo-400/15 pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor">
+        <svg class="alchemy-spin-reverse absolute w-44 h-44 text-indigo-400/15 pointer-events-none" viewBox="0 0 100 100" fill="none" stroke="currentColor">
           <circle cx="50" cy="50" r="42" stroke-width="0.5" stroke-dasharray="4 4"/>
           <rect x="22" y="22" width="56" height="56" stroke-width="0.6"/>
         </svg>
 
-        <!-- Center Character Avatar Graphic -->
-        <div id="card-avatar" class="relative z-20 w-36 h-36 flex items-center justify-center transform transition-transform duration-300 drop-shadow-[0_16px_32px_rgba(0,0,0,0.9)]">
-          <!-- Injected SVG Artwork -->
+        <!-- Dynamic Character Avatar -->
+        <div id="card-avatar" class="relative z-20 w-44 h-44 flex items-center justify-center transform transition-transform duration-300 drop-shadow-[0_12px_24px_rgba(0,0,0,0.95)]">
+          <!-- Injected Detailed SVG Artwork -->
         </div>
       </div>
 
       <!-- Card Bottom: Narrative Monologue -->
-      <div class="relative z-20 bg-slate-950/90 border border-amber-500/35 rounded-xl p-3.5 backdrop-blur-md shadow-2xl min-h-[92px] flex items-center justify-center text-center">
-        <p id="card-text" class="text-sm sm:text-[14.5px] text-amber-100/95 leading-relaxed font-semibold tracking-wide font-cn-serif drop-shadow">
+      <div class="relative z-20 bg-slate-950/90 border border-amber-500/35 rounded-xl p-3 backdrop-blur-md shadow-xl min-h-[85px] flex items-center justify-center text-center">
+        <p id="card-text" class="text-[13.5px] leading-relaxed text-amber-100/95 font-medium tracking-wide drop-shadow">
           “陛下，夜幕低垂，命运的齿轮已然启动……”
         </p>
       </div>
@@ -387,30 +366,30 @@
     </div>
 
     <!-- Choice Preview Pill -->
-    <div id="choice-preview" class="mt-2.5 px-4 py-1 bg-slate-950/90 border border-amber-500/40 rounded-full flex items-center gap-2 text-xs opacity-0 transition-all duration-150 backdrop-blur-md shadow-xl">
+    <div id="choice-preview" class="mt-2 px-3 py-1 bg-slate-950/90 border border-amber-500/40 rounded-full flex items-center gap-2 text-xs opacity-0 transition-all duration-150 backdrop-blur-md shadow-lg">
       <span class="text-amber-400 font-cinzel font-bold">‹</span>
-      <span id="preview-text" class="text-amber-200 font-semibold font-cn-serif">左右滑动做出决断</span>
+      <span id="preview-text" class="text-amber-200 font-semibold">左右滑动做出决断</span>
       <span class="text-amber-400 font-cinzel font-bold">›</span>
     </div>
 
   </main>
 
   <!-- ==================== FOOTER: ACTION HINTS & BUTTONS ==================== -->
-  <footer class="w-full max-w-sm pb-5 px-3.5 z-20 flex flex-col items-center gap-2.5">
+  <footer class="w-full max-w-sm pb-4 px-3.5 z-20 flex flex-col items-center gap-2">
     <!-- Swipe Action Buttons (Tap Friendly / 44px min-height) -->
-    <div class="w-full flex justify-between items-center gap-3 px-1">
-      <button id="btn-swipe-left" class="flex-1 min-h-[44px] bg-gradient-to-r from-red-950/80 to-slate-900/95 border border-red-500/40 text-red-300 py-2 px-3 rounded-xl text-xs font-bold font-cn-serif flex items-center justify-center gap-1.5 shadow-lg active:scale-95 transition-all">
+    <div class="w-full flex justify-between items-center gap-2.5 px-1">
+      <button id="btn-swipe-left" class="flex-1 min-h-[44px] bg-gradient-to-r from-red-950/80 to-slate-900/95 border border-red-500/40 text-red-300 py-1.5 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1 shadow-lg active:scale-95 transition-all">
         <span class="font-cinzel text-sm">‹</span>
         <span id="btn-text-left">独处观星</span>
       </button>
 
-      <button id="btn-swipe-right" class="flex-1 min-h-[44px] bg-gradient-to-r from-slate-900/95 to-emerald-950/80 border border-emerald-500/40 text-emerald-300 py-2 px-3 rounded-xl text-xs font-bold font-cn-serif flex items-center justify-center gap-1.5 shadow-lg active:scale-95 transition-all">
+      <button id="btn-swipe-right" class="flex-1 min-h-[44px] bg-gradient-to-r from-slate-900/95 to-emerald-950/80 border border-emerald-500/40 text-emerald-300 py-1.5 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1 shadow-lg active:scale-95 transition-all">
         <span id="btn-text-right">举杯畅饮</span>
         <span class="font-cinzel text-sm">›</span>
       </button>
     </div>
 
-    <div class="text-[10px] text-amber-400/60 tracking-wider font-cinzel flex items-center gap-1">
+    <div class="text-[10px] text-amber-400/50 tracking-wider font-cinzel flex items-center gap-1">
       <span>✦ SWIPE CARD TO RULE · REVEAL YOUR SOUL ✦</span>
     </div>
   </footer>
@@ -424,14 +403,14 @@
       <div class="absolute -top-12 w-64 h-64 bg-amber-500/20 rounded-full blur-3xl pointer-events-none"></div>
 
       <!-- Prestige MBTI Royal Tarot Card -->
-      <div class="tarot-card w-full border-2 border-amber-400/80 rounded-3xl p-6 flex flex-col items-center text-center shadow-[0_0_60px_rgba(245,158,11,0.3)] relative overflow-hidden bg-gradient-to-b from-[#1e172e] via-[#120d1c] to-[#080610]">
+      <div class="tarot-card w-full border-2 border-amber-400/80 rounded-3xl p-5 flex flex-col items-center text-center shadow-[0_0_60px_rgba(212,175,55,0.3)] relative overflow-hidden bg-gradient-to-b from-[#1e172e] via-[#120d1c] to-[#080610]">
         
         <div class="card-foil opacity-90"></div>
         <div class="card-border-ornament"></div>
 
         <!-- Royal Crown Header -->
-        <div class="relative z-20 flex flex-col items-center gap-1">
-          <svg class="w-8 h-8 text-amber-400 rune-pulse" viewBox="0 0 24 24" fill="currentColor">
+        <div class="relative z-20 flex flex-col items-center gap-0.5">
+          <svg class="w-7 h-7 text-amber-400 rune-pulse" viewBox="0 0 24 24" fill="currentColor">
             <path d="M5 16L3 5L8.5 10L12 4L15.5 10L21 5L19 16H5M19 19C19 19.6 18.6 20 18 20H6C5.4 20 5 19.6 5 19V18H19V19Z"/>
           </svg>
           <span class="font-cinzel text-[10px] font-black tracking-[0.25em] text-amber-300/90 uppercase">
@@ -440,49 +419,49 @@
         </div>
 
         <!-- Major MBTI Type Code -->
-        <div class="relative z-20 my-2">
-          <h1 id="result-type" class="font-cinzel text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-yellow-500 tracking-wider drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)]">
+        <div class="relative z-20 my-1.5">
+          <h1 id="result-type" class="font-cinzel text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-yellow-500 tracking-wider drop-shadow">
             INTJ
           </h1>
-          <div id="result-title" class="text-base font-bold text-amber-100 mt-1 font-cn-serif tracking-widest drop-shadow">
+          <div id="result-title" class="text-base font-bold text-amber-100 mt-0.5 tracking-wider drop-shadow">
             幕后执棋者 · 永夜先知
           </div>
         </div>
 
         <!-- Seal / Persona Art -->
-        <div class="relative z-20 w-24 h-24 my-2 rounded-full border-2 border-amber-500/60 bg-slate-950 flex items-center justify-center shadow-inner overflow-hidden">
-          <div id="result-icon" class="w-18 h-18 text-amber-300"></div>
+        <div class="relative z-20 w-24 h-24 my-1.5 rounded-full border-2 border-amber-500/60 bg-slate-950 flex items-center justify-center shadow-inner overflow-hidden">
+          <div id="result-icon" class="w-20 h-20 text-amber-300 flex items-center justify-center"></div>
         </div>
 
         <!-- Persona Monologue Description -->
-        <div class="relative z-20 bg-slate-950/85 border border-amber-500/35 rounded-xl p-3.5 my-2 backdrop-blur-md">
-          <p id="result-quote" class="text-xs text-amber-200/95 leading-relaxed font-cn-serif font-medium">
+        <div class="relative z-20 bg-slate-950/85 border border-amber-500/35 rounded-xl p-3 my-1.5 backdrop-blur-md">
+          <p id="result-quote" class="text-xs text-amber-200/95 leading-relaxed font-medium">
             “以深邃洞察洞悉宿命之局，冷静运筹，于阴影中奠定王国千年之基。”
           </p>
         </div>
 
         <!-- Trait Breakdown Meters -->
-        <div class="relative z-20 w-full grid grid-cols-2 gap-2 my-2 text-[11px] font-cinzel">
-          <div class="bg-slate-900/85 border border-amber-500/25 rounded-lg p-2 flex justify-between items-center text-amber-200">
-            <span class="text-slate-400 font-cn-serif">外向 / 内向</span>
+        <div class="relative z-20 w-full grid grid-cols-2 gap-2 my-1.5 text-[11px] font-cinzel">
+          <div class="bg-slate-900/85 border border-amber-500/25 rounded-lg p-1.5 flex justify-between items-center text-amber-200">
+            <span class="text-slate-400 font-serif">外向 / 内向</span>
             <span id="res-ei" class="font-bold text-amber-300">I (78%)</span>
           </div>
-          <div class="bg-slate-900/85 border border-amber-500/25 rounded-lg p-2 flex justify-between items-center text-amber-200">
-            <span class="text-slate-400 font-cn-serif">实感 / 直觉</span>
+          <div class="bg-slate-900/85 border border-amber-500/25 rounded-lg p-1.5 flex justify-between items-center text-amber-200">
+            <span class="text-slate-400 font-serif">实感 / 直觉</span>
             <span id="res-sn" class="font-bold text-amber-300">N (82%)</span>
           </div>
-          <div class="bg-slate-900/85 border border-amber-500/25 rounded-lg p-2 flex justify-between items-center text-amber-200">
-            <span class="text-slate-400 font-cn-serif">理智 / 情感</span>
+          <div class="bg-slate-900/85 border border-amber-500/25 rounded-lg p-1.5 flex justify-between items-center text-amber-200">
+            <span class="text-slate-400 font-serif">理智 / 情感</span>
             <span id="res-tf" class="font-bold text-amber-300">T (85%)</span>
           </div>
-          <div class="bg-slate-900/85 border border-amber-500/25 rounded-lg p-2 flex justify-between items-center text-amber-200">
-            <span class="text-slate-400 font-cn-serif">判断 / 感知</span>
+          <div class="bg-slate-900/85 border border-amber-500/25 rounded-lg p-1.5 flex justify-between items-center text-amber-200">
+            <span class="text-slate-400 font-serif">判断 / 感知</span>
             <span id="res-jp" class="font-bold text-amber-300">J (90%)</span>
           </div>
         </div>
 
         <!-- Restart Button -->
-        <button id="btn-restart" class="relative z-20 mt-3 w-full py-2.5 bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-600 text-slate-950 font-bold rounded-xl font-cinzel text-xs tracking-widest uppercase shadow-[0_10px_25px_rgba(245,158,11,0.4)] active:scale-95 transition-all">
+        <button id="btn-restart" class="relative z-20 mt-2 w-full py-2 bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-600 text-slate-950 font-bold rounded-xl font-cinzel text-xs tracking-widest uppercase shadow-lg active:scale-95 transition-all">
           Re-Engage the Crown (重历王权)
         </button>
 
@@ -492,10 +471,10 @@
 
   <!-- ==================== SCRIPT ==================== -->
   <script>
-    /* Ember Particles (Aeonix ThreeUI System) */
+    /* 1. EMBER & GOLD SPARK PARTICLES (THREEUI EMBER STORM) */
     const canvas = document.getElementById('ember-canvas');
     const ctx = canvas.getContext('2d');
-    let width, height, particles = [];
+    let width, height, particles = [], sparks = [];
 
     function resizeCanvas() {
       width = canvas.width = window.innerWidth;
@@ -534,20 +513,61 @@
       }
     }
 
+    class SparkBurst {
+      constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color || '#fbbf24';
+        this.vx = (Math.random() - 0.5) * 12;
+        this.vy = (Math.random() - 0.5) * 12;
+        this.size = Math.random() * 3 + 1.5;
+        this.alpha = 1;
+        this.decay = Math.random() * 0.04 + 0.02;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += 0.2; // gravity
+        this.alpha -= this.decay;
+      }
+      draw() {
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, this.alpha);
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.shadowBlur = 8;
+        ctx.shadowColor = this.color;
+        ctx.fill();
+        ctx.restore();
+      }
+    }
+
     for (let i = 0; i < 40; i++) {
       const p = new Particle();
       p.y = Math.random() * height;
       particles.push(p);
     }
 
+    function createSparkExplosion(x, y, color) {
+      for (let i = 0; i < 20; i++) {
+        sparks.push(new SparkBurst(x, y, color));
+      }
+    }
+
     function animateParticles() {
       ctx.clearRect(0, 0, width, height);
       for (let p of particles) { p.update(); p.draw(); }
+      for (let i = sparks.length - 1; i >= 0; i--) {
+        sparks[i].update();
+        sparks[i].draw();
+        if (sparks[i].alpha <= 0) sparks.splice(i, 1);
+      }
       requestAnimationFrame(animateParticles);
     }
     animateParticles();
 
-    /* Audio Synthesizer */
+    /* 2. AUDIO SYNTHESIZER */
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playTone(type) {
       if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -589,66 +609,117 @@
       }
     }
 
-    /* Tarot Artworks */
+    /* 3. HIGH-AESTHETIC MEDIEVAL TAROT CHARACTER ARTWORKS */
     const AVATARS = {
-      jester: `<svg viewBox="0 0 100 100" class="w-full h-full text-pink-400 drop-shadow-[0_0_12px_rgba(244,114,182,0.6)]">
-        <circle cx="50" cy="50" r="38" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2 4" opacity="0.6"/>
-        <path d="M25 45 C20 15 45 28 50 12 C55 28 80 15 75 45 C85 55 75 82 50 82 C25 82 15 55 25 45 Z" fill="#1e1028" stroke="currentColor" stroke-width="2.5"/>
-        <circle cx="50" cy="12" r="4.5" fill="#fcd34d" stroke="#f59e0b" stroke-width="1.5"/>
-        <circle cx="18" cy="42" r="4" fill="#fcd34d"/>
-        <circle cx="82" cy="42" r="4" fill="#fcd34d"/>
-        <path d="M38 52 Q42 46 46 52" stroke="#fbcfe8" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-        <path d="M54 52 Q58 46 62 52" stroke="#fbcfe8" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-        <path d="M42 66 Q50 74 58 66" stroke="#fcd34d" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      // 弄臣 派特 (The Jester / Trickster)
+      jester: `<svg viewBox="0 0 120 120" class="w-full h-full text-pink-400 drop-shadow-[0_0_15px_rgba(244,114,182,0.6)]">
+        <!-- Dual Crescent Bells Cap -->
+        <path d="M60 25 C45 10 20 18 15 38 C28 42 42 35 48 45" fill="#2d1028" stroke="#f472b6" stroke-width="2" stroke-linejoin="round"/>
+        <path d="M60 25 C75 10 100 18 105 38 C92 42 78 35 72 45" fill="#2d1028" stroke="#f472b6" stroke-width="2" stroke-linejoin="round"/>
+        <circle cx="14" cy="38" r="4" fill="#fbbf24" stroke="#d97706" stroke-width="1.5"/>
+        <circle cx="106" cy="38" r="4" fill="#fbbf24" stroke="#d97706" stroke-width="1.5"/>
+        <!-- Face Contour -->
+        <path d="M38 45 C38 35 82 35 82 45 C82 72 74 88 60 92 C46 88 38 72 38 45 Z" fill="#180e22" stroke="#f472b6" stroke-width="2"/>
+        <!-- Harlequin Mask Eyes -->
+        <polygon points="44,52 54,46 52,56 46,58" fill="#fbbf24"/>
+        <polygon points="76,52 66,46 68,56 74,58" fill="#fbbf24"/>
+        <!-- Mysterious Smirk -->
+        <path d="M48 72 Q60 84 72 72" fill="none" stroke="#f43f5e" stroke-width="2.5" stroke-linecap="round"/>
+        <polygon points="60,94 48,110 72,110" fill="#3b0728" stroke="#f472b6" stroke-width="1.5"/>
       </svg>`,
 
-      marshal: `<svg viewBox="0 0 100 100" class="w-full h-full text-amber-400 drop-shadow-[0_0_12px_rgba(251,191,36,0.6)]">
-        <polygon points="50,10 82,30 82,68 50,92 18,68 18,30" fill="#1a1208" stroke="currentColor" stroke-width="2.5"/>
-        <polygon points="50,18 75,34 75,64 50,84 25,64 25,34" fill="none" stroke="#d97706" stroke-width="1.2" stroke-dasharray="3 3"/>
-        <path d="M50 20 L50 48 M35 48 L65 48" stroke="#fef08a" stroke-width="3" stroke-linecap="round"/>
-        <path d="M32 58 L68 58" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>
-        <line x1="28" y1="76" x2="72" y2="32" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
-        <line x1="72" y1="76" x2="28" y2="32" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/>
+      // 大元帅 雷奥 (The High Marshal)
+      marshal: `<svg viewBox="0 0 120 120" class="w-full h-full text-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.6)]">
+        <!-- Full Great Helm Plume -->
+        <path d="M60 12 C60 12 75 10 82 25 C74 24 68 28 65 35" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round"/>
+        <!-- Steel Helm Outer -->
+        <polygon points="60,24 88,38 84,82 60,102 36,82 32,38" fill="#181520" stroke="#f59e0b" stroke-width="2.5" stroke-linejoin="round"/>
+        <!-- Gilded Crown Brow -->
+        <polygon points="40,42 48,34 60,40 72,34 80,42 78,50 42,50" fill="#3d2b07" stroke="#fbbf24" stroke-width="1.5"/>
+        <!-- T-Visor Slit -->
+        <path d="M42 58 H78 M60 58 V80" stroke="#fef08a" stroke-width="3.5" stroke-linecap="round"/>
+        <!-- Gorget Plate -->
+        <path d="M30 88 L60 108 L90 88" fill="none" stroke="#d97706" stroke-width="2.5"/>
       </svg>`,
 
-      bishop: `<svg viewBox="0 0 100 100" class="w-full h-full text-indigo-300 drop-shadow-[0_0_12px_rgba(165,180,252,0.6)]">
-        <path d="M50 10 C35 30 30 60 30 85 L70 85 C70 60 65 30 50 10 Z" fill="#0d1326" stroke="currentColor" stroke-width="2.5"/>
-        <line x1="50" y1="25" x2="50" y2="65" stroke="#fcd34d" stroke-width="3" stroke-linecap="round"/>
-        <line x1="40" y1="40" x2="60" y2="40" stroke="#fcd34d" stroke-width="3" stroke-linecap="round"/>
-        <circle cx="50" cy="22" r="3" fill="#fef08a"/>
-        <circle cx="50" cy="48" r="36" fill="none" stroke="#818cf8" stroke-width="1.5" stroke-dasharray="2 4" opacity="0.7"/>
+      // 大主教 塞莱斯 (The Sacred Hierophant)
+      bishop: `<svg viewBox="0 0 120 120" class="w-full h-full text-indigo-300 drop-shadow-[0_0_15px_rgba(165,180,252,0.6)]">
+        <!-- Sacred Halo -->
+        <circle cx="60" cy="60" r="46" fill="none" stroke="#818cf8" stroke-width="1.5" stroke-dasharray="3 4" opacity="0.6"/>
+        <!-- Papal Mitre -->
+        <path d="M60 14 C42 35 38 65 38 86 L82 86 C82 65 78 35 60 14 Z" fill="#101428" stroke="#a5b4fc" stroke-width="2.5"/>
+        <!-- Mitre Split -->
+        <path d="M60 14 V70" stroke="#fbbf24" stroke-width="2"/>
+        <circle cx="60" cy="38" r="5" fill="#fcd34d" stroke="#d97706" stroke-width="1.5"/>
+        <!-- Eye of Providence in Mitre -->
+        <path d="M48 62 Q60 52 72 62 Q60 72 48 62 Z" fill="#1e1b4b" stroke="#fbbf24" stroke-width="1.5"/>
+        <circle cx="60" cy="62" r="2.5" fill="#fef08a"/>
+        <!-- Robe Collar -->
+        <path d="M30 92 L60 110 L90 92" fill="#1e1b4b" stroke="#818cf8" stroke-width="2"/>
       </svg>`,
 
-      queen: `<svg viewBox="0 0 100 100" class="w-full h-full text-emerald-400 drop-shadow-[0_0_12px_rgba(52,211,153,0.6)]">
-        <circle cx="50" cy="50" r="40" fill="#081c15" stroke="currentColor" stroke-width="2"/>
-        <path d="M28 42 L34 26 L50 36 L66 26 L72 42 Z" fill="#064e3b" stroke="#34d399" stroke-width="2" stroke-linejoin="round"/>
-        <circle cx="34" cy="24" r="2.5" fill="#fcd34d"/>
-        <circle cx="50" cy="33" r="3.5" fill="#fcd34d"/>
-        <circle cx="66" cy="24" r="2.5" fill="#fcd34d"/>
-        <path d="M32 46 C32 75 68 75 68 46" fill="none" stroke="#6ee7b7" stroke-width="2" stroke-dasharray="2 3"/>
-        <circle cx="50" cy="62" r="4" fill="#fcd34d"/>
+      // 王国内相 艾琳 (The Queen Consort / Regent)
+      queen: `<svg viewBox="0 0 120 120" class="w-full h-full text-emerald-400 drop-shadow-[0_0_15px_rgba(52,211,153,0.6)]">
+        <!-- Crown Diadem -->
+        <path d="M34 45 L40 25 L50 36 L60 22 L70 36 L80 25 L86 45 Z" fill="#064e3b" stroke="#34d399" stroke-width="2" stroke-linejoin="round"/>
+        <circle cx="40" cy="23" r="2.5" fill="#fbbf24"/>
+        <circle cx="60" cy="20" r="3.5" fill="#fef08a"/>
+        <circle cx="80" cy="23" r="2.5" fill="#fbbf24"/>
+        <!-- Royal Veil & Silhouette -->
+        <path d="M36 50 C30 75 42 98 60 102 C78 98 90 75 84 50" fill="#081c15" stroke="#34d399" stroke-width="2"/>
+        <!-- Emerald Pendant -->
+        <polygon points="60,68 68,78 60,88 52,78" fill="#10b981" stroke="#a7f3d0" stroke-width="1.5"/>
+        <line x1="60" y1="52" x2="60" y2="68" stroke="#fbbf24" stroke-width="1.5"/>
       </svg>`,
 
-      alchemist: `<svg viewBox="0 0 100 100" class="w-full h-full text-teal-300 drop-shadow-[0_0_12px_rgba(94,234,212,0.6)]">
-        <path d="M44 18 L56 18 L56 38 L76 76 C79 82 74 88 66 88 L34 88 C26 88 21 82 24 76 L44 38 Z" fill="#042f2e" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
-        <line x1="42" y1="18" x2="58" y2="18" stroke="#5eead4" stroke-width="3" stroke-linecap="round"/>
-        <path d="M30 74 Q50 66 70 74" fill="none" stroke="#2dd4bf" stroke-width="2.5" stroke-linecap="round"/>
-        <circle cx="42" cy="62" r="3.5" fill="#99f6e4"/>
-        <circle cx="58" cy="54" r="2.5" fill="#99f6e4"/>
-        <circle cx="50" cy="44" r="2" fill="#ccfbf1"/>
+      // 皇家炼金术士 (The Grand Alchemist)
+      alchemist: `<svg viewBox="0 0 120 120" class="w-full h-full text-teal-300 drop-shadow-[0_0_15px_rgba(94,234,212,0.6)]">
+        <!-- Plague / Alchemist Beak Hood -->
+        <path d="M60 18 C40 18 32 40 32 65 C32 88 50 102 60 102 C70 102 88 88 88 65 C88 40 80 18 60 18 Z" fill="#042f2e" stroke="#2dd4bf" stroke-width="2"/>
+        <!-- Brass Goggles -->
+        <circle cx="46" cy="52" r="10" fill="#134e4a" stroke="#fbbf24" stroke-width="2"/>
+        <circle cx="74" cy="52" r="10" fill="#134e4a" stroke="#fbbf24" stroke-width="2"/>
+        <circle cx="46" cy="52" r="4" fill="#5eead4"/>
+        <circle cx="74" cy="52" r="4" fill="#5eead4"/>
+        <line x1="56" y1="52" x2="64" y2="52" stroke="#fbbf24" stroke-width="2"/>
+        <!-- Steam Flask Filter -->
+        <path d="M50 78 C50 70 70 70 70 78 L74 95 H46 Z" fill="#115e59" stroke="#5eead4" stroke-width="1.5"/>
+        <circle cx="60" cy="85" r="2" fill="#fef08a"/>
       </svg>`,
 
-      astrologer: `<svg viewBox="0 0 100 100" class="w-full h-full text-purple-300 drop-shadow-[0_0_12px_rgba(216,180,254,0.6)]">
-        <circle cx="50" cy="50" r="38" fill="#1a0b2e" stroke="currentColor" stroke-width="2.5"/>
-        <ellipse cx="50" cy="50" rx="34" ry="14" fill="none" stroke="#c084fc" stroke-width="1.8" transform="rotate(30 50 50)"/>
-        <ellipse cx="50" cy="50" rx="34" ry="14" fill="none" stroke="#e9d5ff" stroke-width="1.8" transform="rotate(-30 50 50)"/>
-        <circle cx="50" cy="7" fill="#fcd34d" stroke="#f59e0b" stroke-width="1.5"/>
-        <circle cx="30" cy="28" r="2" fill="#fff"/>
-        <circle cx="72" cy="32" r="2" fill="#fff"/>
+      // 皇家占星学者 (The Royal Astrologer)
+      astrologer: `<svg viewBox="0 0 120 120" class="w-full h-full text-purple-300 drop-shadow-[0_0_15px_rgba(216,180,254,0.6)]">
+        <!-- Armillary Sphere Rings -->
+        <ellipse cx="60" cy="60" rx="44" ry="16" fill="none" stroke="#c084fc" stroke-width="1.8" transform="rotate(35 60 60)"/>
+        <ellipse cx="60" cy="60" rx="44" ry="16" fill="none" stroke="#e9d5ff" stroke-width="1.8" transform="rotate(-35 60 60)"/>
+        <ellipse cx="60" cy="60" rx="42" ry="42" fill="#120924" stroke="#a855f7" stroke-width="2"/>
+        <!-- Central Star Core -->
+        <circle cx="60" cy="60" r="12" fill="#3b0764" stroke="#fbbf24" stroke-width="2"/>
+        <circle cx="60" cy="60" r="5" fill="#fef08a"/>
+        <!-- Constellation Nodes -->
+        <circle cx="36" cy="38" r="2.5" fill="#fff"/>
+        <circle cx="84" cy="42" r="2.5" fill="#fff"/>
+        <circle cx="78" cy="82" r="2.5" fill="#fff"/>
+        <line x1="36" y1="38" x2="60" y2="60" stroke="#c084fc" stroke-width="1" stroke-dasharray="2 2"/>
+        <line x1="84" y1="42" x2="60" y2="60" stroke="#c084fc" stroke-width="1" stroke-dasharray="2 2"/>
+      </svg>`,
+
+      // 密探首领 影刃 (The Shadowblade / Spymaster)
+      spymaster: `<svg viewBox="0 0 120 120" class="w-full h-full text-rose-400 drop-shadow-[0_0_15px_rgba(251,113,133,0.6)]">
+        <!-- Deep Cowl Hood -->
+        <path d="M60 14 C35 14 26 42 26 80 L94 80 C94 42 85 14 60 14 Z" fill="#180710" stroke="#f43f5e" stroke-width="2.5"/>
+        <!-- Shadow Abyss Inside Hood -->
+        <path d="M60 26 C42 26 36 50 36 78 H84 C84 50 78 26 60 26 Z" fill="#070205"/>
+        <!-- Glowing Assassin Dagger Eyes -->
+        <path d="M42 54 L52 58 L42 62 Z" fill="#fb7185"/>
+        <path d="M78 54 L68 58 L78 62 Z" fill="#fb7185"/>
+        <!-- Crossed Hidden Daggers -->
+        <line x1="35" y1="95" x2="85" y2="65" stroke="#f43f5e" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="85" y1="95" x2="35" y2="65" stroke="#f43f5e" stroke-width="2.5" stroke-linecap="round"/>
       </svg>`
     };
 
-    /* Decisions Data */
+    /* 4. 15 HIGH-TENSION MBTI DECISION SCENARIOS */
     const DECISIONS = [
       {
         speaker: "宫廷弄臣 派特",
@@ -687,7 +758,7 @@
       },
       {
         speaker: "密探首领 影刃",
-        avatar: AVATARS.marshal,
+        avatar: AVATARS.spymaster,
         text: "“抓获了一名盗窃国库药剂的落魄盗贼，其动机是为了救治重病的老母。”",
         left: { stamp: "依法惩处", text: "“盗窃即是重罪，若为私情开脱，法律将荡然无存。”", hint: "客观逻辑", effects: { TF: -18 } },
         right: { stamp: "法外开恩", text: "“孝心可悯，赐药救人，改罚其入工坊做工抵罪。”", hint: "人情体恤", effects: { TF: 18 } }
@@ -700,56 +771,56 @@
         right: { stamp: "命运启示", text: "“文明的隐喻、宇宙的终极意义与未来的命运走向。”", hint: "概念直觉", effects: { SN: 18 } }
       },
       {
-        speaker: "御林军统领",
+        speaker: "帝国大元帅 雷奥",
         avatar: AVATARS.marshal,
         text: "“暴风雨即将来袭，皇城卫队的防汛轮值表是否立刻锁死、禁止私自换班？”",
         left: { stamp: "铁令如山", text: "“立刻下达死令，任何人不得擅离指定岗位！”", hint: "刚性判断", effects: { JP: -18 } },
         right: { stamp: "相机而动", text: "“各小队根据汛情险急自行机动协调支援。”", hint: "弹性适应", effects: { JP: 18 } }
       },
       {
-        speaker: "邻国特使 戴维",
+        speaker: "宫廷弄臣 派特",
         avatar: AVATARS.jester,
         text: "“两国国书已签署。今晚有一场轻松非正式的私人沙龙，陛下是否愿意出席漫谈？”",
         left: { stamp: "避席独处", text: "“公事已毕，朕乏了，外交辞令留给文官吧。”", hint: "收敛内省", effects: { EI: 18 } },
         right: { stamp: "欣然赴会", text: "“正合我意！在推杯换盏中结识更多异邦朋友！”", hint: "热情社交", effects: { EI: -18 } }
       },
       {
-        speaker: "法务官 克罗索",
+        speaker: "大主教 塞莱斯",
         avatar: AVATARS.bishop,
         text: "“一位功勋卓越的老臣犯了欺君之罪，但他是为了保护年轻皇子的名誉。”",
         left: { stamp: "公事公办", text: "“欺君即是大逆，必须公开定罪以正视听。”", hint: "原则理性", effects: { TF: -18 } },
         right: { stamp: "私下宽恕", text: "“深明其苦心，私下戒勉即可，莫伤忠臣之心。”", hint: "情理关怀", effects: { TF: 18 } }
       },
       {
-        speaker: "大学士 莫尔",
+        speaker: "皇家占星学者",
         avatar: AVATARS.astrologer,
         text: "“皇家图书馆新进万卷藏书，陛下欲先编纂实用律法农书，还是形而上哲学玄典？”",
         left: { stamp: "务实工典", text: "“农耕治水、筑城冶铁，实用之术才能救民于水火。”", hint: "实感务实", effects: { SN: -18 } },
         right: { stamp: "哲学玄思", text: "“灵魂思辨、先知密卷，形上之光才能启迪万民。”", hint: "直觉深邃", effects: { SN: 18 } }
       },
       {
-        speaker: "工匠行会 会长",
+        speaker: "皇家炼金术士",
         avatar: AVATARS.alchemist,
         text: "“帝都大剧院的设计方案，陛下喜欢严格对称的古典规制，还是错落多变的先锋结构？”",
         left: { stamp: "对称规整", text: "“秩序与严谨是对神圣王权最好的赞歌。”", hint: "秩序结构", effects: { JP: -18 } },
         right: { stamp: "天马行空", text: "“打破对称！让未知的灵感自由挥洒！”", hint: "随性自由", effects: { JP: 18 } }
       },
       {
-        speaker: "游吟诗人 费奥",
-        avatar: AVATARS.jester,
+        speaker: "王国内相 艾琳",
+        avatar: AVATARS.queen,
         text: "“陛下处理朝政遭遇巨大困扰时，您更倾向于在众人激辩中寻找灵感，还是关门冥想？”",
         left: { stamp: "闭门深思", text: "“退入静夜，唯有绝对的寂静能澄澈朕的心灵。”", hint: "内向沉淀", effects: { EI: 15 } },
         right: { stamp: "群策群力", text: "“召集众卿！在思想的碰撞与交锋中点燃火花！”", hint: "外向迸发", effects: { EI: -15 } }
       },
       {
-        speaker: "大审判官",
-        avatar: AVATARS.bishop,
+        speaker: "密探首领 影刃",
+        avatar: AVATARS.spymaster,
         text: "“两家商会因契约漏洞产生纠纷，导致港口货物滞留。陛下裁决的准绳是？”",
         left: { stamp: "契约铁律", text: "“字斟句酌，严格执行白纸黑字的契约条款。”", hint: "逻辑客观", effects: { TF: -15 } },
         right: { stamp: "衡平情理", text: "“体察双方实际损失，寻找充满人情味的折中方案。”", hint: "人伦感性", effects: { TF: 15 } }
       },
       {
-        speaker: "老太医",
+        speaker: "皇家炼金术士",
         avatar: AVATARS.alchemist,
         text: "“太医署流传百年的用药戒律严重拖慢了急症救治。陛下是否废除？”",
         left: { stamp: "恪守成法", text: "“祖宗成法不可轻废，繁杂程序自有其防错深意。”", hint: "敬畏规则", effects: { JP: -15 } },
@@ -776,7 +847,7 @@
       "ESFP": { title: "极乐狂欢者 · 黄金舞台", quote: "“人生即是一场永不落幕的盛宴。尽情歌舞，将生命燃成最绚烂的焰火。”", icon: AVATARS.jester }
     };
 
-    /* State & Logic */
+    /* 5. STATE MANAGEMENT & GAME ENGINE */
     let currentIndex = 0;
     let scores = { EI: 50, SN: 50, TF: 50, JP: 50 };
     
@@ -819,7 +890,7 @@
       cardSpeaker.textContent = item.speaker.toUpperCase();
       cardAvatar.innerHTML = item.avatar;
       cardText.textContent = item.text;
-      turnCounter.textContent = `CHRONICLE ${currentIndex + 1}/${DECISIONS.length}`;
+      turnCounter.textContent = `${currentIndex + 1}/${DECISIONS.length}`;
 
       btnTextLeft.textContent = item.left.stamp;
       btnTextRight.textContent = item.right.stamp;
@@ -861,6 +932,11 @@
       const item = DECISIONS[currentIndex];
       const outcome = direction === 'left' ? item.left : item.right;
       
+      // Spark Explosion on ruling
+      const rect = activeCard.getBoundingClientRect();
+      const sparkX = direction === 'left' ? rect.left + 50 : rect.right - 50;
+      createSparkExplosion(sparkX, rect.top + 150, direction === 'left' ? '#f87171' : '#34d399');
+
       for (let k in outcome.effects) {
         scores[k] = Math.max(5, Math.min(95, scores[k] + outcome.effects[k]));
       }
@@ -898,7 +974,7 @@
       foil.style.setProperty('--foil-y', `50%`);
     });
 
-    /* Touch Drag */
+    /* Touch Drag Mechanics */
     let startX = 0, startY = 0, isDragging = false;
 
     function handleDragStart(x, y) {
@@ -983,6 +1059,7 @@
     btnLeft.addEventListener('click', () => applyDecision('left'));
     btnRight.addEventListener('click', () => applyDecision('right'));
 
+    /* Result Showcase */
     function showResult() {
       playTone('victory');
       const E_or_I = scores.EI >= 50 ? 'I' : 'E';
