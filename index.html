@@ -127,6 +127,7 @@
       background: #fdfbf7;
       border: 1.5px solid rgba(180, 131, 44, 0.4);
       box-shadow: 0 3px 10px rgba(133, 98, 48, 0.15), inset 0 1px 3px rgba(0,0,0,0.06);
+      cursor: pointer;
     }
     .meter-canvas-wave {
       position: absolute;
@@ -214,6 +215,22 @@
       align-items: center;
       justify-content: center;
     }
+
+    /* Secret Easter Egg Toast */
+    #secret-toast {
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-20px);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      z-index: 60;
+    }
+    #secret-toast.active {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
   </style>
 </head>
 <body class="flex flex-col justify-between items-center relative overflow-hidden select-none">
@@ -222,12 +239,18 @@
   <canvas id="ember-canvas"></canvas>
   <div class="grain-overlay"></div>
 
+  <!-- Secret Toast Notification -->
+  <div id="secret-toast" class="bg-amber-950/90 text-amber-100 px-4 py-2 rounded-full border border-amber-500 shadow-xl flex items-center gap-2 text-xs font-bold font-cinzel">
+    <span class="text-yellow-400 text-sm">✦</span>
+    <span id="secret-toast-msg">发现隐藏彩蛋！</span>
+  </div>
+
   <!-- ==================== TOP BAR: REALM PILLARS ==================== -->
   <header class="w-full max-w-sm pt-3 px-3 z-20 flex flex-col gap-2">
     
     <!-- Title & Chronicle Header -->
     <div class="flex justify-between items-center px-1">
-      <div class="flex items-center gap-1.5">
+      <div class="flex items-center gap-1.5 cursor-pointer" id="title-crown" title="连续点击触发彩蛋">
         <svg class="w-4 h-4 text-amber-700 rune-pulse" viewBox="0 0 24 24" fill="currentColor">
           <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
         </svg>
@@ -239,15 +262,15 @@
       <!-- Round Progress -->
       <div class="bg-amber-900/10 border border-amber-800/20 backdrop-blur-md px-2.5 py-0.5 rounded-full flex items-center gap-1.5 shadow-sm">
         <div class="w-1.5 h-1.5 rounded-full bg-amber-600 animate-ping"></div>
-        <span class="font-cinzel text-[11px] font-bold tracking-wider text-amber-900" id="turn-counter">1/15</span>
+        <span class="font-cinzel text-[11px] font-bold tracking-wider text-amber-900" id="turn-counter">1/20</span>
       </div>
     </div>
 
-    <!-- 4 Sanctuary Pillars (MBTI Balances) -->
+    <!-- 4 Sanctuary Pillars (MBTI Balances - Tap for Divine Inspection) -->
     <div class="grid grid-cols-4 gap-2 bg-white/75 border border-amber-800/20 rounded-2xl p-2.5 backdrop-blur-xl shadow-[0_8px_25px_rgba(133,98,48,0.12)] relative">
       
       <!-- Pillar 1: E <-> I -->
-      <div class="flex flex-col items-center gap-1 relative group">
+      <div class="flex flex-col items-center gap-1 relative group meter-pillar-btn" data-pillar="EI" title="点击倾听神殿低语">
         <div class="meter-capsule w-11 h-11 rounded-full overflow-hidden flex items-center justify-center relative">
           <canvas id="wave-ei" class="meter-canvas-wave"></canvas>
           <svg class="w-5 h-5 text-amber-900 relative z-10 drop-shadow-sm pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -266,7 +289,7 @@
       </div>
 
       <!-- Pillar 2: S <-> N -->
-      <div class="flex flex-col items-center gap-1 relative group">
+      <div class="flex flex-col items-center gap-1 relative group meter-pillar-btn" data-pillar="SN" title="点击倾听神殿低语">
         <div class="meter-capsule w-11 h-11 rounded-full overflow-hidden flex items-center justify-center relative">
           <canvas id="wave-sn" class="meter-canvas-wave"></canvas>
           <svg class="w-5 h-5 text-amber-900 relative z-10 drop-shadow-sm pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -284,7 +307,7 @@
       </div>
 
       <!-- Pillar 3: T <-> F -->
-      <div class="flex flex-col items-center gap-1 relative group">
+      <div class="flex flex-col items-center gap-1 relative group meter-pillar-btn" data-pillar="TF" title="点击倾听神殿低语">
         <div class="meter-capsule w-11 h-11 rounded-full overflow-hidden flex items-center justify-center relative">
           <canvas id="wave-tf" class="meter-canvas-wave"></canvas>
           <svg class="w-5 h-5 text-amber-900 relative z-10 drop-shadow-sm pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -303,7 +326,7 @@
       </div>
 
       <!-- Pillar 4: J <-> P -->
-      <div class="flex flex-col items-center gap-1 relative group">
+      <div class="flex flex-col items-center gap-1 relative group meter-pillar-btn" data-pillar="JP" title="点击倾听神殿低语">
         <div class="meter-capsule w-11 h-11 rounded-full overflow-hidden flex items-center justify-center relative">
           <canvas id="wave-jp" class="meter-canvas-wave"></canvas>
           <svg class="w-5 h-5 text-amber-900 relative z-10 drop-shadow-sm pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -371,8 +394,8 @@
           <rect x="22" y="22" width="56" height="56" stroke-width="0.7"/>
         </svg>
 
-        <!-- Dynamic Character Avatar -->
-        <div id="card-avatar" class="relative z-20 w-44 h-44 flex items-center justify-center transform transition-transform duration-300 drop-shadow-[0_8px_16px_rgba(92,70,43,0.3)]">
+        <!-- Dynamic Character Avatar (Click for Sound/Reaction) -->
+        <div id="card-avatar" class="relative z-20 w-44 h-44 flex items-center justify-center transform transition-transform duration-300 drop-shadow-[0_8px_16px_rgba(92,70,43,0.3)] active:scale-90 cursor-pointer">
           <!-- Injected SVG Artwork -->
         </div>
       </div>
@@ -631,7 +654,7 @@
     }
     animateParticles();
 
-    /* 2. LIQUID METABALL WAVE FOR SANCTUARY METERS (PASTEL LIGHT PALETTE) */
+    /* 2. LIQUID METABALL WAVE FOR SANCTUARY METERS */
     function initWaveCanvas(canvasId, gradientColors) {
       const c = document.getElementById(canvasId);
       const cx = c.getContext('2d');
@@ -709,6 +732,20 @@
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
         osc.start(now);
         osc.stop(now + 0.22);
+      } else if (type === 'easter') {
+        // Magical chime
+        [523.25, 783.99, 1046.50, 1567.98].forEach((freq, i) => {
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.connect(g);
+          g.connect(audioCtx.destination);
+          o.type = 'sine';
+          o.frequency.setValueAtTime(freq, now + i * 0.08);
+          g.gain.setValueAtTime(0.18, now + i * 0.08);
+          g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.5);
+          o.start(now + i * 0.08);
+          o.stop(now + i * 0.08 + 0.55);
+        });
       } else if (type === 'death') {
         osc.type = 'sawtooth';
         osc.frequency.setValueAtTime(160, now);
@@ -804,11 +841,22 @@
         <path d="M78 54 L68 58 L78 62 Z" fill="#dc2626"/>
         <line x1="35" y1="95" x2="85" y2="65" stroke="#292524" stroke-width="2.5" stroke-linecap="round"/>
         <line x1="85" y1="95" x2="35" y2="65" stroke="#292524" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>`,
+
+      dragon: `<svg viewBox="0 0 120 120" class="w-full h-full text-amber-700">
+        <path d="M25 75 Q40 40 60 25 Q80 40 95 75 Q60 95 25 75 Z" fill="#fffbeb" stroke="#b45309" stroke-width="2.5"/>
+        <polygon points="60,15 54,28 66,28" fill="#d97706"/>
+        <circle cx="45" cy="55" r="4" fill="#dc2626"/>
+        <circle cx="75" cy="55" r="4" fill="#dc2626"/>
+        <path d="M50 75 Q60 85 70 75" fill="none" stroke="#b45309" stroke-width="2" stroke-linecap="round"/>
+        <!-- Smoke Puff -->
+        <circle cx="35" cy="85" r="3" fill="#cbd5e1" opacity="0.8"/>
+        <circle cx="85" cy="85" r="3" fill="#cbd5e1" opacity="0.8"/>
       </svg>`
     };
 
-    /* 5. DECISION DECK WITH WEATHER & BRANCHING FLAGS */
-    let storyFlags = { fundedAlchemist: false };
+    /* 5. EXTENDED 20-ROUND CURATED STORY DECK */
+    let storyFlags = { fundedAlchemist: false, petDragon: false };
 
     const DECISIONS = [
       {
@@ -816,64 +864,72 @@
         avatar: AVATARS.jester,
         weather: "ember",
         text: "“陛下！今夜城堡大厅正举行千人盛宴，邻国贵族云集。您是去举杯高谈阔论，还是退回塔楼清修？”",
-        left: { stamp: "独处观星", text: "“喧嚣令人疲惫，传令闭门，朕要在星空下静思。”", hint: "内向蓄能", effects: { EI: 22 } },
-        right: { stamp: "举杯畅饮", text: "“备好御酒！与众卿痛饮方能彰显帝国威仪！”", hint: "外向共振", effects: { EI: -22 } }
+        left: { stamp: "独处观星", text: "“喧嚣令人疲惫，传令闭门，朕要在星空下静思。”", hint: "内向蓄能", effects: { EI: 18 } },
+        right: { stamp: "举杯畅饮", text: "“备好御酒！与众卿痛饮方能彰显帝国威仪！”", hint: "外向共振", effects: { EI: -18 } }
       },
       {
         speaker: "帝国大元帅 雷奥",
         avatar: AVATARS.marshal,
         weather: "ember",
         text: "“两名战功赫赫的百夫长在营帐内拔刀互斗！陛下当如何圣裁？”",
-        left: { stamp: "军法铁律", text: "“依帝国军律从严惩办，法度不可因功而废！”", hint: "理性严明", effects: { TF: -22 } },
-        right: { stamp: "体恤抚慰", text: "“先赐御酒体察其委屈，安抚军心胜于生硬用刑。”", hint: "感性共情", effects: { TF: 22 } }
+        left: { stamp: "军法铁律", text: "“依帝国军律从严惩办，法度不可因功而废！”", hint: "理性严明", effects: { TF: -18 } },
+        right: { stamp: "体恤抚慰", text: "“先赐御酒体察其委屈，安抚军心胜于生硬用刑。”", hint: "感性共情", effects: { TF: 18 } }
       },
       {
         speaker: "皇家炼金术士",
         avatar: AVATARS.alchemist,
         weather: "ember",
         text: "“臣研发出一种未经验证的神秘魔导蒸汽机，可能让产能翻十倍，但也可能炸塌工坊！”",
-        left: { stamp: "稳妥改良", text: "“不可妄动，先基于现有水车工坊稳扎稳打。”", hint: "经验务实", effects: { SN: -20 }, onChoose: () => { storyFlags.fundedAlchemist = false; } },
-        right: { stamp: "跃入未知", text: "“立刻注资！真正的飞跃向来属于敢于想象之人！”", hint: "直觉探索", effects: { SN: 20 }, onChoose: () => { storyFlags.fundedAlchemist = true; } }
+        left: { stamp: "稳妥改良", text: "“不可妄动，先基于现有水车工坊稳扎稳打。”", hint: "经验务实", effects: { SN: -16 }, onChoose: () => { storyFlags.fundedAlchemist = false; } },
+        right: { stamp: "跃入未知", text: "“立刻注资！真正的飞跃向来属于敢于想象之人！”", hint: "直觉探索", effects: { SN: 16 }, onChoose: () => { storyFlags.fundedAlchemist = true; } }
+      },
+      {
+        speaker: "神秘古龙 尤里",
+        avatar: AVATARS.dragon,
+        weather: "ember",
+        text: "“吼……陛下在后山救下了一只幼年火龙。御前骑士建议斩草除根，您打算？”",
+        left: { stamp: "斩除后患", text: "“非我族类，其心必异，命骑士送回蛮荒。”", hint: "现实理性", effects: { TF: -15, SN: -12 } },
+        right: { stamp: "收为御兽", text: "“喂它皇家鲜肉！朕要亲自驯化这头神兽！”", hint: "直觉感性", effects: { TF: 15, SN: 12 }, onChoose: () => { storyFlags.petDragon = true; } }
       },
       {
         speaker: "大主教 塞莱斯",
         avatar: AVATARS.bishop,
         weather: "snow",
         text: "“在圣堂永恒的辩论中，陛下认为帝国的万世基业应当依托于什么？”",
-        left: { stamp: "粮仓与剑", text: "“充盈的国库、坚厚的石墙与历历在目的军力。”", hint: "具象实感", effects: { SN: -20 } },
-        right: { stamp: "宏愿信仰", text: "“超越现世的宏大图景、精神信仰与未来宏愿。”", hint: "形上直觉", effects: { SN: 20 } }
+        left: { stamp: "粮仓与剑", text: "“充盈的国库、坚厚的石墙与历历在目的军力。”", hint: "具象实感", effects: { SN: -18 } },
+        right: { stamp: "宏愿信仰", text: "“超越现世的宏大图景、精神信仰与未来宏愿。”", hint: "形上直觉", effects: { SN: 18 } }
       },
       {
         speaker: "王国内相 艾琳",
         avatar: AVATARS.queen,
         weather: "ember",
         text: "“御前会议明日启程巡视边疆，内阁已呈上细化至日晷刻度的详尽法令日程。”",
-        left: { stamp: "严苛规制", text: "“准奏！行程必须严丝合缝，不容半分差池。”", hint: "计划秩序", effects: { JP: -22 } },
-        right: { stamp: "随兴应变", text: "“不必拘泥死板条条框框，走到哪便看到哪。”", hint: "灵活自发", effects: { JP: 22 } }
+        left: { stamp: "严苛规制", text: "“准奏！行程必须严丝合缝，不容半分差池。”", hint: "计划秩序", effects: { JP: -18 } },
+        right: { stamp: "随兴应变", text: "“不必拘泥死板条条框框，走到哪便看到哪。”", hint: "灵活自发", effects: { JP: 18 } }
       },
       {
         speaker: "密探首领 影刃",
         avatar: AVATARS.spymaster,
         weather: "ember",
         text: "“抓获了一名盗窃国库药剂的落魄盗贼，其动机是为了救治重病的老母。”",
-        left: { stamp: "依法惩处", text: "“盗窃即是重罪，若为私情开脱，法律将荡然无存。”", hint: "客观逻辑", effects: { TF: -20 } },
-        right: { stamp: "法外开恩", text: "“孝心可悯，赐药救人，改罚其入工坊做工抵罪。”", hint: "人情体恤", effects: { TF: 20 } }
+        left: { stamp: "依法惩处", text: "“盗窃即是重罪，若为私情开脱，法律将荡然无存。”", hint: "客观逻辑", effects: { TF: -16 } },
+        right: { stamp: "法外开恩", text: "“孝心可悯，赐药救人，改罚其入工坊做工抵罪。”", hint: "人情体恤", effects: { TF: 16 } }
       },
       {
         speaker: "皇家占星学者",
         avatar: AVATARS.astrologer,
         weather: "snow",
         text: "“陛下独处冥思时，浮现于心头的常常是具体的往事琐碎，还是冥冥中的星轨命理？”",
-        left: { stamp: "现世物象", text: "“昨天的账目、粮草的储备以及眼前真实的臣民。”", hint: "具象落地", effects: { SN: -20 } },
-        right: { stamp: "命运启示", text: "“文明的隐喻、宇宙的终极意义与未来的命运走向。”", hint: "概念直觉", effects: { SN: 20 } }
+        left: { stamp: "现世物象", text: "“昨天的账目、粮草的储备以及眼前真实的臣民。”", hint: "具象落地", effects: { SN: -16 } },
+        right: { stamp: "命运启示", text: "“文明的隐喻、宇宙的终极意义与未来的命运走向。”", hint: "概念直觉", effects: { SN: 16 } }
       },
       {
         speaker: "帝国大元帅 雷奥",
         avatar: AVATARS.marshal,
         weather: "ember",
         text: "“暴风雨即将来袭，皇城卫队的防汛轮值表是否立刻锁死、禁止私自换班？”",
-        left: { stamp: "铁令如山", text: "“立刻下达死令，任何人不得擅离指定岗位！”", hint: "刚性判断", effects: { JP: -20 } },
-        right: { stamp: "相机而动", text: "“各小队根据汛情险急自行机动协调支援。”", hint: "弹性适应", effects: { JP: 20 } }
+        left: { stamp: "铁令如山", text: "“立刻下达死令，任何人不得擅离指定岗位！”", hint: "刚性判断", effects: { JP: -16 } },
+        right: { stamp: "相机而动", text: "“各小队根据汛情险急自行机动协调支援。”", hint: "弹性适应", effects: { JP: 16 } }
       },
       {
         get speaker() { return storyFlags.fundedAlchemist ? "皇家炼金术士" : "工匠行会 会长"; },
@@ -884,56 +940,92 @@
             ? "“陛下！您注资的魔导装置研制成功，但释放出狂暴能量！我们是就地解体还是全力开火？”"
             : "“陛下，传统工坊工匠抗议税率过重，请求减免。内阁建议派兵压制。”";
         },
-        left: { stamp: "平息稳控", text: "“安全第一，立刻平息风险！”", hint: "稳健控制", effects: { SN: -15, JP: -15 } },
-        right: { stamp: "冒险一试", text: "“拥抱未知的力量，全力推进！”", hint: "果敢进取", effects: { SN: 15, JP: 15 } }
+        left: { stamp: "平息稳控", text: "“安全第一，立刻平息风险！”", hint: "稳健控制", effects: { SN: -14, JP: -14 } },
+        right: { stamp: "冒险一试", text: "“拥抱未知的力量，全力推进！”", hint: "果敢进取", effects: { SN: 14, JP: 14 } }
+      },
+      {
+        get speaker() { return storyFlags.petDragon ? "神秘古龙 尤里" : "王国内相 艾琳"; },
+        get avatar() { return storyFlags.petDragon ? AVATARS.dragon : AVATARS.queen; },
+        weather: "ember",
+        get text() {
+          return storyFlags.petDragon
+            ? "“呼哧……小火龙在皇家御花园喷火烧掉了半片树林，但也意外挖出了一箱远古黄金！”"
+            : "“邻国使节送来了一车罕见奇珍，请求与我国建立自由贸易区。”";
+        },
+        left: { stamp: "严惩/拒约", text: "“规矩不能乱，严加管束！”", hint: "谨慎守序", effects: { JP: -14 } },
+        right: { stamp: "奖赏/签约", text: "“哈哈，瑕不掩瑜！全面接纳！”", hint: "开放接纳", effects: { JP: 14 } }
       },
       {
         speaker: "宫廷弄臣 派特",
         avatar: AVATARS.jester,
         weather: "ember",
         text: "“两国国书已签署。今晚有一场轻松非正式的私人沙龙，陛下是否愿意出席漫谈？”",
-        left: { stamp: "避席独处", text: "“公事已毕，朕乏了，外交辞令留给文官吧。”", hint: "收敛内省", effects: { EI: 20 } },
-        right: { stamp: "欣然赴会", text: "“正合我意！在推杯换盏中结识更多异邦朋友！”", hint: "热情社交", effects: { EI: -20 } }
+        left: { stamp: "避席独处", text: "“公事已毕，朕乏了，外交辞令留给文官吧。”", hint: "收敛内省", effects: { EI: 16 } },
+        right: { stamp: "欣然赴会", text: "“正合我意！在推杯换盏中结识更多异邦朋友！”", hint: "热情社交", effects: { EI: -16 } }
       },
       {
         speaker: "法务官 克罗索",
         avatar: AVATARS.bishop,
         weather: "ember",
         text: "“一位功勋卓越的老臣犯了欺君之罪，但他是为了保护年轻皇子的名誉。”",
-        left: { stamp: "公事公办", text: "“欺君即是大逆，必须公开定罪以正视听。”", hint: "原则理性", effects: { TF: -20 } },
-        right: { stamp: "私下宽恕", text: "“深明其苦心，私下戒勉即可，莫伤忠臣之心。”", hint: "情理关怀", effects: { TF: 20 } }
+        left: { stamp: "公事公办", text: "“欺君即是大逆，必须公开定罪以正视听。”", hint: "原则理性", effects: { TF: -16 } },
+        right: { stamp: "私下宽恕", text: "“深明其苦心，私下戒勉即可，莫伤忠臣之心。”", hint: "情理关怀", effects: { TF: 16 } }
+      },
+      {
+        speaker: "异邦游侠 扎克",
+        avatar: AVATARS.spymaster,
+        weather: "snow",
+        text: "“陛下微服私访来到陌生的海外重镇，面对未知的街巷，您打算如何漫步？”",
+        left: { stamp: "按图索骥", text: "“买一份官方羊皮图，按著名地标依次游览。”", hint: "务实计划", effects: { SN: -12, JP: -12 } },
+        right: { stamp: "随心穿梭", text: "“扔掉地图，任由直觉带朕探访深巷奇遇。”", hint: "直觉漫游", effects: { SN: 12, JP: 12 } }
       },
       {
         speaker: "大学士 莫尔",
         avatar: AVATARS.astrologer,
         weather: "snow",
         text: "“皇家图书馆新进万卷藏书，陛下欲先编纂实用律法农书，还是形而上哲学玄典？”",
-        left: { stamp: "务实工典", text: "“农耕治水、筑城冶铁，实用之术才能救民于水火。”", hint: "实感务实", effects: { SN: -20 } },
-        right: { stamp: "哲学玄思", text: "“灵魂思辨、先知密卷，形上之光才能启迪万民。”", hint: "直觉深邃", effects: { SN: 20 } }
+        left: { stamp: "务实工典", text: "“农耕治水、筑城冶铁，实用之术才能救民于水火。”", hint: "实感务实", effects: { SN: -16 } },
+        right: { stamp: "哲学玄思", text: "“灵魂思辨、先知密卷，形上之光才能启迪万民。”", hint: "直觉深邃", effects: { SN: 16 } }
+      },
+      {
+        speaker: "年轻女画家",
+        avatar: AVATARS.queen,
+        weather: "ember",
+        text: "“画家为您绘制即位肖像画，您希望画风是写实记录每一根白发，还是充满写意的神性浪漫？”",
+        left: { stamp: "精准写实", text: "“真实才是最伟大的力量，分毫不差记录岁月。”", hint: "具象求真", effects: { SN: -14 } },
+        right: { stamp: "浪漫写意", text: "“赋予它神圣的诗意与光辉，定格灵魂之美。”", hint: "写意灵性", effects: { SN: 14 } }
       },
       {
         speaker: "工匠行会 会长",
         avatar: AVATARS.alchemist,
         weather: "ember",
         text: "“帝都大剧院的设计方案，陛下喜欢严格对称的古典规制，还是错落多变的先锋结构？”",
-        left: { stamp: "对称规整", text: "“秩序与严谨是对神圣王权最好的赞歌。”", hint: "秩序结构", effects: { JP: -20 } },
-        right: { stamp: "天马行空", text: "“打破对称！让未知的灵感自由挥洒！”", hint: "随性自由", effects: { JP: 20 } }
+        left: { stamp: "对称规整", text: "“秩序与严谨是对神圣王权最好的赞歌。”", hint: "秩序结构", effects: { JP: -16 } },
+        right: { stamp: "天马行空", text: "“打破对称！让未知的灵感自由挥洒！”", hint: "随性自由", effects: { JP: 16 } }
       },
       {
         speaker: "游吟诗人 费奥",
         avatar: AVATARS.jester,
         weather: "ember",
         text: "“陛下处理朝政遭遇巨大困扰时，您更倾向于在众人激辩中寻找灵感，还是关门冥想？”",
-        left: { stamp: "闭门深思", text: "“退入静夜，唯有绝对的寂静能澄澈朕的心灵。”", hint: "内向沉淀", effects: { EI: 18 } },
-        right: { stamp: "群策群力", text: "“召集众卿！在思想的碰撞与交锋中点燃火花！”", hint: "外向迸发", effects: { EI: -18 } }
+        left: { stamp: "闭门深思", text: "“退入静夜，唯有绝对的寂静能澄澈朕的心灵。”", hint: "内向沉淀", effects: { EI: 16 } },
+        right: { stamp: "群策群力", text: "“召集众卿！在思想的碰撞与交锋中点燃火花！”", hint: "外向迸发", effects: { EI: -16 } }
+      },
+      {
+        speaker: "老太医署令",
+        avatar: AVATARS.alchemist,
+        weather: "ember",
+        text: "“太医署流传百年的用药戒律严重拖慢了急症救治。陛下是否废除？”",
+        left: { stamp: "恪守成法", text: "“祖宗成法不可轻废，繁杂程序自有其防错深意。”", hint: "敬畏规则", effects: { JP: -15 } },
+        right: { stamp: "当机立断", text: "“救人如救火！繁文缛节全部靠边站！”", hint: "打破藩篱", effects: { JP: 15 } }
       },
       {
         speaker: "命运女神 雕像",
         avatar: AVATARS.bishop,
         weather: "snow",
         text: "“终焉之门已启。陛下，回顾你这一路的铁血裁决，驱动你的究竟是冰冷的理性，还是炙热的本心？”",
-        left: { stamp: "绝对理性", text: "“世界如棋局，唯有算无遗策的逻辑方能长存。”", hint: "逻辑至上", effects: { TF: -20 } },
-        right: { stamp: "心之所向", text: "“顺从灵魂深处的直觉、善意与真实的情感。”", hint: "情感共鸣", effects: { TF: 20 } }
+        left: { stamp: "绝对理性", text: "“世界如棋局，唯有算无遗策的逻辑方能长存。”", hint: "逻辑至上", effects: { TF: -18 } },
+        right: { stamp: "心之所向", text: "“顺从灵魂深处的直觉、善意与真实的情感。”", hint: "情感共鸣", effects: { TF: 18 } }
       }
     ];
 
@@ -985,6 +1077,16 @@
     const rayTF = document.getElementById('ray-tf');
     const rayJP = document.getElementById('ray-jp');
 
+    const secretToast = document.getElementById('secret-toast');
+    const secretToastMsg = document.getElementById('secret-toast-msg');
+
+    function showSecretToast(msg) {
+      playTone('easter');
+      secretToastMsg.textContent = msg;
+      secretToast.classList.add('active');
+      setTimeout(() => secretToast.classList.remove('active'), 2200);
+    }
+
     function renderCard() {
       if (currentIndex >= DECISIONS.length) {
         showResult();
@@ -996,7 +1098,7 @@
       cardSpeaker.textContent = item.speaker.toUpperCase();
       cardAvatar.innerHTML = item.avatar;
       cardText.textContent = item.text;
-      turnCounter.textContent = `CHRONICLE ${currentIndex + 1}/${DECISIONS.length}`;
+      turnCounter.textContent = `${currentIndex + 1}/${DECISIONS.length}`;
 
       btnTextLeft.textContent = item.left.stamp;
       btnTextRight.textContent = item.right.stamp;
@@ -1182,6 +1284,44 @@
     btnLeft.addEventListener('click', () => applyDecision('left'));
     btnRight.addEventListener('click', () => applyDecision('right'));
 
+    /* 7. EASTER EGGS & INTERACTIVE SECRETS */
+    // Easter Egg 1: Tap Crown 5 times
+    let crownClicks = 0;
+    document.getElementById('title-crown').addEventListener('click', () => {
+      crownClicks++;
+      playTone('swipe');
+      if (crownClicks === 5) {
+        crownClicks = 0;
+        showSecretToast('👑 触发皇室秘宝：神柱全部回归完美平衡！');
+        scores = { EI: 50, SN: 50, TF: 50, JP: 50 };
+        updateLiquidMeters();
+      }
+    });
+
+    // Easter Egg 2: Tap Avatar on Card to interact
+    cardAvatar.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const rect = cardAvatar.getBoundingClientRect();
+      createSparkExplosion(rect.left + rect.width / 2, rect.top + rect.height / 2, '#d4a34b');
+      playTone('easter');
+      showSecretToast('✨ 命运使者回应了你的抚触！');
+    });
+
+    // Easter Egg 3: Tap Sanctuary Pillars for Divine Insight
+    document.querySelectorAll('.meter-pillar-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const pillar = btn.getAttribute('data-pillar');
+        playTone('easter');
+        const score = scores[pillar];
+        let desc = "";
+        if (pillar === 'EI') desc = score > 50 ? `静夜之境 (I: ${score}%)` : `神火之域 (E: ${100-score}%)`;
+        if (pillar === 'SN') desc = score > 50 ? `真理直觉 (N: ${score}%)` : `具象实感 (S: ${100-score}%)`;
+        if (pillar === 'TF') desc = score > 50 ? `同理感性 (F: ${score}%)` : `铁律理智 (T: ${100-score}%)`;
+        if (pillar === 'JP') desc = score > 50 ? `自由探索 (P: ${score}%)` : `秩序规制 (J: ${100-score}%)`;
+        showSecretToast(`🔮 神殿共鸣：${desc}`);
+      });
+    });
+
     /* Result Showcase & Share Poster */
     function showResult() {
       playTone('victory');
@@ -1230,7 +1370,7 @@
     function restartGame() {
       currentIndex = 0;
       scores = { EI: 50, SN: 50, TF: 50, JP: 50 };
-      storyFlags = { fundedAlchemist: false };
+      storyFlags = { fundedAlchemist: false, petDragon: false };
       renderCard();
       document.getElementById('result-modal').classList.add('pointer-events-none');
       document.getElementById('result-modal').classList.remove('opacity-100');
