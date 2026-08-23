@@ -1,0 +1,1073 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>MBTI 王权：人格之骰</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800;900&family=Noto+Serif+SC:wght@500;700;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-dark: #08090d;
+      --gold-main: #d4af37;
+      --gold-light: #f6e05e;
+      --gold-dark: #8c6d1f;
+    }
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    body {
+      user-select: none;
+      -webkit-user-select: none;
+      overflow: hidden;
+      background-color: var(--bg-dark);
+      color: #e2e8f0;
+      font-family: 'Noto Serif SC', serif;
+      height: 100vh;
+      height: 100dvh;
+    }
+    .font-cinzel {
+      font-family: 'Cinzel', serif;
+    }
+    .font-mono-num {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Ambient Background Texture & Glow */
+    .bg-vignette {
+      background: radial-gradient(circle at 50% 35%, #181926 0%, #0c0d14 60%, #06070a 100%);
+    }
+    .bg-noise {
+      background-image: radial-gradient(rgba(212, 175, 55, 0.08) 1px, transparent 0);
+      background-size: 24px 24px;
+    }
+
+    /* Gold Ornate Borders & Frames */
+    .reigns-frame {
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.8), inset 0 0 12px rgba(212, 175, 55, 0.08);
+      position: relative;
+    }
+    .reigns-frame::after {
+      content: '';
+      position: absolute;
+      inset: 2px;
+      border: 1px solid rgba(212, 175, 55, 0.15);
+      pointer-events: none;
+      border-radius: inherit;
+    }
+    .corner-decor {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-color: #d4af37;
+      pointer-events: none;
+    }
+    .corner-tl { top: 3px; left: 3px; border-top: 2px solid; border-left: 2px solid; }
+    .corner-tr { top: 3px; right: 3px; border-top: 2px solid; border-right: 2px solid; }
+    .corner-bl { bottom: 3px; left: 3px; border-bottom: 2px solid; border-left: 2px solid; }
+    .corner-br { bottom: 3px; right: 3px; border-bottom: 2px solid; border-right: 2px solid; }
+
+    /* Card Physics Container */
+    .card-stage {
+      perspective: 1200px;
+    }
+    .game-card {
+      transform-style: preserve-3d;
+      will-change: transform, opacity;
+      cursor: grab;
+      touch-action: none;
+    }
+    .game-card:active {
+      cursor: grabbing;
+    }
+
+    /* Meter Pointers & Pulsing Indicators */
+    .meter-circle {
+      position: relative;
+      background: radial-gradient(circle, #1e1b2e 0%, #0f1016 100%);
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.8), 0 0 10px rgba(0,0,0,0.5);
+    }
+    .pulse-dot {
+      animation: pulse-glow 1.2s infinite ease-in-out;
+    }
+    @keyframes pulse-glow {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.35); opacity: 1; filter: drop-shadow(0 0 6px #f6e05e); }
+    }
+
+    /* Stamp Animations */
+    .choice-stamp {
+      position: absolute;
+      top: 20px;
+      padding: 6px 14px;
+      font-family: 'Cinzel', 'Noto Serif SC', serif;
+      font-weight: 900;
+      font-size: 1.1rem;
+      letter-spacing: 0.1em;
+      border-radius: 6px;
+      text-transform: uppercase;
+      border: 3px solid;
+      pointer-events: none;
+      z-index: 30;
+      opacity: 0;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+    }
+    .stamp-left {
+      right: 16px;
+      transform: rotate(12deg) scale(0.9);
+      color: #f87171;
+      border-color: #f87171;
+      background: rgba(15, 23, 42, 0.85);
+      box-shadow: 0 0 15px rgba(248, 113, 113, 0.4);
+    }
+    .stamp-right {
+      left: 16px;
+      transform: rotate(-12deg) scale(0.9);
+      color: #34d399;
+      border-color: #34d399;
+      background: rgba(15, 23, 42, 0.85);
+      box-shadow: 0 0 15px rgba(52, 211, 153, 0.4);
+    }
+  </style>
+</head>
+<body class="bg-vignette bg-noise flex flex-col justify-between items-center px-4 py-3 select-none">
+
+  <!-- ==================== TOP REIGNS METERS ==================== -->
+  <header class="w-full max-w-sm flex flex-col items-center gap-2 pt-1 z-10">
+    <!-- Header Title & Card Count -->
+    <div class="w-full flex justify-between items-center px-1">
+      <div class="flex items-center gap-1.5">
+        <svg viewBox="0 0 24 24" class="w-4 h-4 text-amber-400" fill="currentColor">
+          <path d="M5 16L3 5l5.5 5L12 4l3.5 6L21 5l-2 11H5m14 3c0 .6-.4 1-1 1H6c-.6 0-1-.4-1-1v-1h14v1z"/>
+        </svg>
+        <span class="font-cinzel text-xs tracking-widest text-amber-300 font-extrabold">MBTI REIGNS</span>
+      </div>
+      <div class="flex items-center gap-1 reigns-frame bg-slate-950/80 px-2.5 py-0.5 rounded-full">
+        <span class="text-[10px] text-amber-400/70 font-cinzel">CHRONICLE</span>
+        <span id="card-progress" class="font-mono-num text-xs font-bold text-amber-200">1/15</span>
+      </div>
+    </div>
+
+    <!-- 4 Royal Faction Icons (E/I, S/N, T/F, J/P) -->
+    <div class="w-full grid grid-cols-4 gap-2.5 bg-slate-950/85 reigns-frame p-2.5 rounded-2xl">
+      
+      <!-- Faction 1: EI (Mind: Energy) -->
+      <div class="flex flex-col items-center group relative" id="pillar-EI">
+        <!-- Target Indicator Dot -->
+        <div id="dot-EI" class="absolute -top-1.5 w-2 h-2 rounded-full bg-amber-300 opacity-0 transition-opacity duration-200 pulse-dot shadow-sm"></div>
+        <div class="w-12 h-12 rounded-full meter-circle reigns-frame flex items-center justify-center relative overflow-hidden">
+          <!-- Fluid Fill from bottom -->
+          <div id="meter-fill-EI" class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-violet-800 to-fuchsia-500 opacity-70 transition-all duration-300" style="height: 50%;"></div>
+          <!-- Faction Icon -->
+          <svg viewBox="0 0 24 24" class="w-6 h-6 text-amber-200 relative z-10 drop-shadow" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+          </svg>
+        </div>
+        <div class="flex justify-between w-full text-[9px] font-cinzel text-slate-400 mt-1 px-0.5">
+          <span id="label-E" class="font-bold">E</span>
+          <span id="label-I" class="font-bold">I</span>
+        </div>
+      </div>
+
+      <!-- Faction 2: SN (Vision: World) -->
+      <div class="flex flex-col items-center group relative" id="pillar-SN">
+        <div id="dot-SN" class="absolute -top-1.5 w-2 h-2 rounded-full bg-amber-300 opacity-0 transition-opacity duration-200 pulse-dot shadow-sm"></div>
+        <div class="w-12 h-12 rounded-full meter-circle reigns-frame flex items-center justify-center relative overflow-hidden">
+          <div id="meter-fill-SN" class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-amber-700 to-emerald-500 opacity-70 transition-all duration-300" style="height: 50%;"></div>
+          <svg viewBox="0 0 24 24" class="w-6 h-6 text-amber-200 relative z-10 drop-shadow" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+        </div>
+        <div class="flex justify-between w-full text-[9px] font-cinzel text-slate-400 mt-1 px-0.5">
+          <span id="label-S" class="font-bold">S</span>
+          <span id="label-N" class="font-bold">N</span>
+        </div>
+      </div>
+
+      <!-- Faction 3: TF (Heart: Logic/Empathy) -->
+      <div class="flex flex-col items-center group relative" id="pillar-TF">
+        <div id="dot-TF" class="absolute -top-1.5 w-2 h-2 rounded-full bg-amber-300 opacity-0 transition-opacity duration-200 pulse-dot shadow-sm"></div>
+        <div class="w-12 h-12 rounded-full meter-circle reigns-frame flex items-center justify-center relative overflow-hidden">
+          <div id="meter-fill-TF" class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-cyan-800 to-rose-500 opacity-70 transition-all duration-300" style="height: 50%;"></div>
+          <svg viewBox="0 0 24 24" class="w-6 h-6 text-amber-200 relative z-10 drop-shadow" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+          </svg>
+        </div>
+        <div class="flex justify-between w-full text-[9px] font-cinzel text-slate-400 mt-1 px-0.5">
+          <span id="label-T" class="font-bold">T</span>
+          <span id="label-F" class="font-bold">F</span>
+        </div>
+      </div>
+
+      <!-- Faction 4: JP (Order: Chaos/Structure) -->
+      <div class="flex flex-col items-center group relative" id="pillar-JP">
+        <div id="dot-JP" class="absolute -top-1.5 w-2 h-2 rounded-full bg-amber-300 opacity-0 transition-opacity duration-200 pulse-dot shadow-sm"></div>
+        <div class="w-12 h-12 rounded-full meter-circle reigns-frame flex items-center justify-center relative overflow-hidden">
+          <div id="meter-fill-JP" class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-blue-800 to-amber-500 opacity-70 transition-all duration-300" style="height: 50%;"></div>
+          <svg viewBox="0 0 24 24" class="w-6 h-6 text-amber-200 relative z-10 drop-shadow" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+        <div class="flex justify-between w-full text-[9px] font-cinzel text-slate-400 mt-1 px-0.5">
+          <span id="label-J" class="font-bold">J</span>
+          <span id="label-P" class="font-bold">P</span>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ==================== CENTER STAGE & CARD ==================== -->
+  <main class="w-full max-w-sm flex-1 flex flex-col justify-center items-center relative my-auto">
+    
+    <!-- Top Floating Decision Preview / Whisper Bubble -->
+    <div class="h-14 flex items-center justify-center px-3 mb-2 w-full text-center">
+      <div id="choice-preview-box" class="reigns-frame bg-slate-950/90 rounded-xl px-4 py-2 opacity-0 transition-all duration-150 transform scale-95 flex items-center justify-center">
+        <p id="choice-preview-text" class="text-xs sm:text-sm font-bold text-amber-200 leading-snug">
+          <!-- Populated during swipe -->
+        </p>
+      </div>
+    </div>
+
+    <!-- The Reigns Card Stack -->
+    <div class="card-stage w-[280px] h-[390px] sm:w-[300px] sm:h-[410px] relative flex items-center justify-center">
+      
+      <!-- Ghost Background Cards (Depth Stacking) -->
+      <div class="absolute w-full h-full bg-[#0d0f17] rounded-2xl reigns-frame -z-20 scale-[0.88] translate-y-5 opacity-40"></div>
+      <div id="under-card" class="absolute w-full h-full bg-[#121522] rounded-2xl reigns-frame -z-10 scale-[0.94] translate-y-2.5 opacity-70 transition-transform duration-200">
+        <div class="corner-decor corner-tl"></div><div class="corner-decor corner-tr"></div>
+        <div class="corner-decor corner-bl"></div><div class="corner-decor corner-br"></div>
+      </div>
+
+      <!-- Interactive Active Card -->
+      <div id="active-card" class="game-card absolute w-full h-full bg-gradient-to-b from-[#181b2a] to-[#0f111a] rounded-2xl reigns-frame p-4 flex flex-col justify-between shadow-2xl z-20 overflow-hidden">
+        
+        <!-- Corner Ornaments -->
+        <div class="corner-decor corner-tl"></div>
+        <div class="corner-decor corner-tr"></div>
+        <div class="corner-decor corner-bl"></div>
+        <div class="corner-decor corner-br"></div>
+
+        <!-- Stamp Indicators on Swipe -->
+        <div id="stamp-left" class="choice-stamp stamp-left">左滑选择</div>
+        <div id="stamp-right" class="choice-stamp stamp-right">右滑选择</div>
+
+        <!-- Speaker Title Pill -->
+        <div class="text-center w-full mt-1">
+          <span id="card-speaker" class="inline-block font-cinzel text-[11px] font-black tracking-widest text-amber-300/90 bg-slate-950/80 border border-amber-500/30 px-3.5 py-0.5 rounded-full shadow-inner">
+            ROYAL ADVISOR
+          </span>
+        </div>
+
+        <!-- Medieval Reigns Character Portrait -->
+        <div class="w-full flex-1 max-h-48 my-2 rounded-xl bg-slate-950/60 border border-amber-500/20 flex items-center justify-center p-2 relative overflow-hidden shadow-inner">
+          <div id="card-avatar" class="w-full h-full flex items-center justify-center transform transition-transform duration-200">
+            <!-- Custom Dynamic SVG Character -->
+          </div>
+        </div>
+
+        <!-- Scenario Dialog / Prompt -->
+        <div class="min-h-[70px] flex items-center justify-center text-center px-1 bg-slate-950/40 rounded-xl p-2 border border-slate-800/80">
+          <p id="card-text" class="text-[13px] sm:text-[14px] leading-relaxed text-slate-200 font-medium">
+            正在召唤命运的抉择...
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Direction Tips -->
+    <div class="flex justify-between items-center w-[280px] sm:w-[300px] mt-3 px-2 text-[11px] text-amber-400/60 font-cinzel font-bold">
+      <span class="flex items-center gap-1">
+        <svg viewBox="0 0 24 24" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        <span id="hint-left-action">左滑拒绝</span>
+      </span>
+      <span class="flex items-center gap-1">
+        <span id="hint-right-action">右滑接受</span>
+        <svg viewBox="0 0 24 24" class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+      </span>
+    </div>
+
+  </main>
+
+  <!-- ==================== FOOTER INSTRUCTION ==================== -->
+  <footer class="w-full max-w-sm pb-2 text-center">
+    <p class="text-[10px] text-slate-500 font-sans tracking-wide">
+      左右拖动卡片做出裁决 • 观察上方四大神柱的命运共鸣
+    </p>
+  </footer>
+
+  <!-- ==================== RESULTS MODAL ==================== -->
+  <div id="results-modal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-xl flex flex-col items-center justify-center p-4 z-50 hidden overflow-y-auto">
+    <div class="w-full max-w-sm bg-gradient-to-b from-[#181a28] to-[#0c0d14] reigns-frame rounded-3xl p-5 flex flex-col items-center gap-4 shadow-2xl my-auto relative">
+      
+      <div class="corner-decor corner-tl"></div>
+      <div class="corner-decor corner-tr"></div>
+      <div class="corner-decor corner-bl"></div>
+      <div class="corner-decor corner-br"></div>
+
+      <!-- Result Header -->
+      <div class="text-center pt-2">
+        <p class="text-[10px] font-cinzel font-black tracking-widest text-amber-400">DESTINY REVEALED</p>
+        <h2 id="result-type" class="font-cinzel text-5xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-amber-400 to-yellow-600 drop-shadow-md mt-1">INTJ</h2>
+        <p id="result-title" class="text-sm font-bold text-amber-100/90 mt-0.5 tracking-wide">幕后策划者 / 战略家</p>
+      </div>
+
+      <!-- Result Crest / Royal Seal -->
+      <div class="w-24 h-24 rounded-full reigns-frame bg-slate-950 flex items-center justify-center relative shadow-inner">
+        <div id="result-badge" class="w-full h-full flex items-center justify-center">
+          <!-- Dynamic Crest -->
+        </div>
+      </div>
+
+      <!-- Personality Breakdown Radar-like Bars -->
+      <div class="w-full bg-slate-950/80 p-3.5 rounded-2xl border border-amber-500/20 space-y-2.5">
+        <h4 class="text-[10px] font-cinzel font-bold text-amber-400 tracking-wider text-center">DIMENSIONAL HARMONY</h4>
+        
+        <!-- EI Bar -->
+        <div class="space-y-1 text-[11px] font-mono-num">
+          <div class="flex justify-between text-slate-300">
+            <span id="res-val-E" class="text-fuchsia-400 font-bold">E 40%</span>
+            <span class="text-slate-500 text-[10px] font-sans">外倾 / 内倾</span>
+            <span id="res-val-I" class="text-violet-400 font-bold">I 60%</span>
+          </div>
+          <div class="h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800 p-0.5">
+            <div id="res-bar-EI" class="h-full bg-gradient-to-r from-fuchsia-500 to-violet-500 rounded-full" style="width: 60%"></div>
+          </div>
+        </div>
+
+        <!-- SN Bar -->
+        <div class="space-y-1 text-[11px] font-mono-num">
+          <div class="flex justify-between text-slate-300">
+            <span id="res-val-S" class="text-amber-400 font-bold">S 30%</span>
+            <span class="text-slate-500 text-[10px] font-sans">实感 / 直觉</span>
+            <span id="res-val-N" class="text-emerald-400 font-bold">N 70%</span>
+          </div>
+          <div class="h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800 p-0.5">
+            <div id="res-bar-SN" class="h-full bg-gradient-to-r from-amber-500 to-emerald-500 rounded-full" style="width: 70%"></div>
+          </div>
+        </div>
+
+        <!-- TF Bar -->
+        <div class="space-y-1 text-[11px] font-mono-num">
+          <div class="flex justify-between text-slate-300">
+            <span id="res-val-T" class="text-cyan-400 font-bold">T 80%</span>
+            <span class="text-slate-500 text-[10px] font-sans">思考 / 情感</span>
+            <span id="res-val-F" class="text-rose-400 font-bold">F 20%</span>
+          </div>
+          <div class="h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800 p-0.5">
+            <div id="res-bar-TF" class="h-full bg-gradient-to-r from-cyan-500 to-rose-500 rounded-full" style="width: 20%"></div>
+          </div>
+        </div>
+
+        <!-- JP Bar -->
+        <div class="space-y-1 text-[11px] font-mono-num">
+          <div class="flex justify-between text-slate-300">
+            <span id="res-val-J" class="text-blue-400 font-bold">J 75%</span>
+            <span class="text-slate-500 text-[10px] font-sans">判断 / 感知</span>
+            <span id="res-val-P" class="text-amber-400 font-bold">P 25%</span>
+          </div>
+          <div class="h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800 p-0.5">
+            <div id="res-bar-JP" class="h-full bg-gradient-to-r from-blue-500 to-amber-500 rounded-full" style="width: 25%"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Description -->
+      <p id="result-desc" class="text-[12px] text-slate-300 leading-relaxed text-justify px-1">
+        加载命定之言...
+      </p>
+
+      <!-- Action Buttons -->
+      <div class="w-full flex gap-2.5 pt-1">
+        <button id="btn-restart" class="flex-1 py-2.5 bg-slate-900 hover:bg-slate-800 text-amber-300 font-cinzel font-bold text-xs rounded-xl transition duration-150 border border-amber-500/30 active:scale-95">
+          REIGN AGAIN
+        </button>
+        <button id="btn-share" class="flex-1 py-2.5 bg-gradient-to-r from-amber-600 to-yellow-500 hover:from-amber-500 hover:to-yellow-400 text-slate-950 font-cinzel font-black text-xs rounded-xl shadow-lg shadow-amber-500/20 transition duration-150 active:scale-95">
+          SEAL & SHARE
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== JAVASCRIPT LOGIC ==================== -->
+  <script>
+    // Audio Synthesizer (Atmospheric Medieval/Arcade Tones)
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playSound(type) {
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      const now = audioCtx.currentTime;
+      if (type === 'swipe') {
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(180, now);
+        osc.frequency.exponentialRampToValueAtTime(50, now + 0.12);
+        gain.gain.setValueAtTime(0.12, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
+        osc.start();
+        osc.stop(now + 0.12);
+      } else if (type === 'decision') {
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(260, now);
+        osc.frequency.exponentialRampToValueAtTime(440, now + 0.18);
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.18);
+        osc.start();
+        osc.stop(now + 0.18);
+      } else if (type === 'victory') {
+        // Royal fanfare triad
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+          const o = audioCtx.createOscillator();
+          const g = audioCtx.createGain();
+          o.connect(g);
+          g.connect(audioCtx.destination);
+          o.type = 'triangle';
+          o.frequency.setValueAtTime(freq, now + i * 0.08);
+          g.gain.setValueAtTime(0.08, now + i * 0.08);
+          g.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.4);
+          o.start(now + i * 0.08);
+          o.stop(now + i * 0.08 + 0.4);
+        });
+      }
+    }
+
+    // Handcrafted Reigns-style Minimalist Vector Avatars
+    const AVATARS = {
+      king: `<svg viewBox="0 0 160 160" class="w-28 h-28 text-amber-300 drop-shadow-[0_4px_12px_rgba(212,175,55,0.3)]" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <!-- Crown -->
+        <polygon points="40,55 50,30 80,45 110,30 120,55" fill="rgba(212,175,55,0.2)"/>
+        <!-- Head -->
+        <path d="M50 55 H110 V95 C110 115 80 125 80 125 C80 125 50 115 50 95 Z" fill="#181b2a"/>
+        <!-- Beard -->
+        <path d="M55 85 Q80 125 105 85" stroke="#d4af37" stroke-width="2"/>
+        <!-- Eyes -->
+        <circle cx="65" cy="72" r="2.5" fill="#f6e05e"/>
+        <circle cx="95" cy="72" r="2.5" fill="#f6e05e"/>
+      </svg>`,
+
+      sorcerer: `<svg viewBox="0 0 160 160" class="w-28 h-28 text-violet-400 drop-shadow-[0_4px_12px_rgba(167,139,250,0.3)]" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <!-- Hood -->
+        <path d="M80 20 L40 120 H120 Z" fill="#151324"/>
+        <path d="M80 20 Q50 60 55 100 Q80 115 105 100 Q110 60 80 20 Z" fill="#1e1b38" stroke="#a78bfa"/>
+        <!-- Glowing Eyes -->
+        <circle cx="70" cy="75" r="3" fill="#38bdf8"/>
+        <circle cx="90" cy="75" r="3" fill="#38bdf8"/>
+        <!-- Arcane Rune -->
+        <path d="M75 95 L85 95 M80 90 L80 100" stroke="#f43f5e" stroke-width="2"/>
+      </svg>`,
+
+      alchemist: `<svg viewBox="0 0 160 160" class="w-28 h-28 text-emerald-400 drop-shadow-[0_4px_12px_rgba(52,211,153,0.3)]" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <!-- Mask / Goggles -->
+        <circle cx="58" cy="70" r="14" fill="#0f172a" stroke="#34d399"/>
+        <circle cx="102" cy="70" r="14" fill="#0f172a" stroke="#34d399"/>
+        <line x1="72" y1="70" x2="88" y2="70"/>
+        <!-- Flask Collar -->
+        <path d="M50 110 C50 90 110 90 110 110 L120 135 H40 Z" fill="#132320"/>
+        <!-- Bubbles -->
+        <circle cx="80" cy="40" r="4" stroke="#a7f3d0" stroke-width="2"/>
+        <circle cx="92" cy="30" r="2.5" stroke="#a7f3d0" stroke-width="2"/>
+      </svg>`,
+
+      general: `<svg viewBox="0 0 160 160" class="w-28 h-28 text-rose-400 drop-shadow-[0_4px_12px_rgba(251,113,133,0.3)]" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <!-- Knight Helm -->
+        <path d="M50 45 C50 25 110 25 110 45 V100 H50 Z" fill="#1c1921"/>
+        <!-- Visor Slit -->
+        <rect x="58" y="65" width="44" height="6" rx="2" fill="#e11d48"/>
+        <!-- Plume / Crest -->
+        <path d="M80 15 Q105 10 115 35" stroke="#f43f5e" stroke-width="4"/>
+        <path d="M40 100 L80 135 L120 100" stroke="#f43f5e"/>
+      </svg>`,
+
+      bard: `<svg viewBox="0 0 160 160" class="w-28 h-28 text-pink-400 drop-shadow-[0_4px_12px_rgba(244,114,182,0.3)]" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <!-- Feather Cap -->
+        <path d="M45 60 C45 40 115 40 115 60 H45 Z" fill="#2d1b28"/>
+        <path d="M100 45 Q125 20 135 15" stroke="#f472b6" stroke-width="3"/>
+        <!-- Face -->
+        <path d="M55 60 V90 C55 105 105 105 105 90 V60" fill="#1e1320"/>
+        <!-- Smirk -->
+        <path d="M72 82 Q80 88 88 82" stroke="#f472b6" stroke-width="2"/>
+        <circle cx="68" cy="72" r="2.5" fill="#fbcfe8"/>
+        <circle cx="92" cy="72" r="2.5" fill="#fbcfe8"/>
+      </svg>`
+    };
+
+    // 15 Curated Medieval Reigns-Themed MBTI Decision Cards
+    const deck = [
+      {
+        speaker: "宫廷弄臣 派特",
+        avatar: AVATARS.bard,
+        text: "“陛下！今夜城堡大厅正举行千人盛宴，邻国贵族云集。您是去举杯高谈阔论，还是退回塔楼清修？”",
+        left: {
+          stamp: "塔楼清修",
+          text: "“关上重门，今夜朕只想一人独处观星。”",
+          hint: "独处观星",
+          effects: { EI: 15, JP: 5 } // Shifts towards I & P
+        },
+        right: {
+          stamp: "盛宴畅饮",
+          text: "“满上美酒！让全境见识朕的宏韬与魅力！”",
+          hint: "举杯畅饮",
+          effects: { EI: -15, JP: -5 } // Shifts towards E & J
+        }
+      },
+      {
+        speaker: "皇家首席法师",
+        avatar: AVATARS.sorcerer,
+        text: "“王国边境的法阵突发异动！陛下，您是要独自彻夜拆解古代符文，还是召集长老议会开坛辩论？”",
+        left: {
+          stamp: "闭门拆解",
+          text: "“退下吧，朕要独自在密室推演符文逻辑。”",
+          hint: "闭关推演",
+          effects: { EI: 12, TF: -10 } // I & T
+        },
+        right: {
+          stamp: "长老议会",
+          text: "“敲响聚贤钟！召集所有人当庭头脑风暴！”",
+          hint: "群策群力",
+          effects: { EI: -12, TF: 10 } // E & F
+        }
+      },
+      {
+        speaker: "财务总管 大臣",
+        avatar: AVATARS.king,
+        text: "“秋收巡游将至。我们要将未来半月的每一个驿站行程都按秒定死，还是随遇而安、兴之所至？”",
+        left: {
+          stamp: "随兴而行",
+          text: "“行军贵在因势利导，走到哪便住在哪。”",
+          hint: "随性巡游",
+          effects: { JP: 18 } // P
+        },
+        right: {
+          stamp: "严苛规制",
+          text: "“必须绘制精确至日晷刻度的详尽法令日程！”",
+          hint: "严格规训",
+          effects: { JP: -18 } // J
+        }
+      },
+      {
+        speaker: "炼金工坊 主管",
+        avatar: AVATARS.alchemist,
+        text: "“臣研发出一种颠覆传统的蒸汽火药，但极不稳定。我们是冒险全面装备军团，还是坚守祖传冷兵器？”",
+        left: {
+          stamp: "传统重铠",
+          text: "“久经沙场的铁甲与剑盾才是最稳固的基石。”",
+          hint: "稳扎稳打",
+          effects: { SN: -18 } // S
+        },
+        right: {
+          stamp: "未知火器",
+          text: "“拥抱未来！未知的革新才能铸就新的帝国！”",
+          hint: "激进探索",
+          effects: { SN: 18 } // N
+        }
+      },
+      {
+        speaker: "大将军 雷奥",
+        avatar: AVATARS.general,
+        text: "“两名立下战功的百夫长发生严重分歧，甚至拔刀相向！陛下如何圣裁？”",
+        left: {
+          stamp: "军法铁律",
+          text: "“按军功簿与军律定罪，法不容情，依理决断。”",
+          hint: "理性公正",
+          effects: { TF: -18 } // T
+        },
+        right: {
+          stamp: "体恤安抚",
+          text: "“先赐御酒抚慰军心，体察各自难处与忠诚。”",
+          hint: "感性关怀",
+          effects: { TF: 18 } // F
+        }
+      },
+      {
+        speaker: "礼仪官 艾琳",
+        avatar: AVATARS.bard,
+        text: "“远方盟邦君主送来一头神秘的远古巨兽幼崽，陛下回赠何物？”",
+        left: {
+          stamp: "万石精粮",
+          text: "“回赠最实用的真金白银、战马与百石良木。”",
+          hint: "务实馈赠",
+          effects: { SN: -15, TF: -5 } // S & T
+        },
+        right: {
+          stamp: "星象秘宝",
+          text: "“赠予镌刻着千年纪元的占星盘与诗歌神卷。”",
+          hint: "寓意诗性",
+          effects: { SN: 15, TF: 5 } // N & F
+        }
+      },
+      {
+        speaker: "内廷典狱长",
+        avatar: AVATARS.king,
+        text: "“皇室图书馆积压了数千卷未经整理的禁书，密室一片凌乱。陛下意下如何？”",
+        left: {
+          stamp: "随手取阅",
+          text: "“乱中有序，智者自能从混沌中找到真理。”",
+          hint: "不拘小节",
+          effects: { JP: 15 } // P
+        },
+        right: {
+          stamp: "分类造册",
+          text: "“限期三日！必须按纪元与法系分毫不差归档。”",
+          hint: "严谨归类",
+          effects: { JP: -15 } // J
+        }
+      },
+      {
+        speaker: "异邦占星术士",
+        avatar: AVATARS.sorcerer,
+        text: "“术士呈上一副虚无缥缈的未来星图，言称三百年后天将降下神火。您相信吗？”",
+        left: {
+          stamp: "斥为妄言",
+          text: "“没有当下的实物与税册作证，皆为荒谬呓语。”",
+          hint: "唯物求证",
+          effects: { SN: -16, TF: -6 } // S & T
+        },
+        right: {
+          stamp: "潜心参详",
+          text: "“万物皆有隐喻，拨开迷雾或能窥见宇宙真理。”",
+          hint: "直觉参悟",
+          effects: { SN: 16, TF: 6 } // N & F
+        }
+      },
+      {
+        speaker: "王家骑士团长",
+        avatar: AVATARS.general,
+        text: "“经历了一整月残酷的边疆征伐，终于凯旋归朝。入城后陛下的第一件事是？”",
+        left: {
+          stamp: "静室安歇",
+          text: "“屏退左右，朕需要在后花园的静水旁洗净疲惫。”",
+          hint: "归隐独处",
+          effects: { EI: 20 } // I
+        },
+        right: {
+          stamp: "通宵狂欢",
+          text: "“大摆庆功宴！与全军将士通宵痛饮高歌！”",
+          hint: "全军同乐",
+          effects: { EI: -20 } // E
+        }
+      },
+      {
+        speaker: "年轻的女学士",
+        avatar: AVATARS.alchemist,
+        text: "“学士在考核中发挥失常，未能通过晋升。她泣不成声，陛下如何告诫？”",
+        left: {
+          stamp: "据实指谬",
+          text: "“功力不逮就是不逮，回去复盘每一处错漏。”",
+          hint: "铁面指出",
+          effects: { TF: -18 } // T
+        },
+        right: {
+          stamp: "温言勉励",
+          text: "“你眼中有求知的灵光，一次挫折不足以定乾坤。”",
+          hint: "暖心激励",
+          effects: { TF: 18 } // F
+        }
+      },
+      {
+        speaker: "迷路的游侠",
+        avatar: AVATARS.bard,
+        text: "“陛下微服私访来到陌生的海外重镇，面对未知的街巷，您打算如何漫步？”",
+        left: {
+          stamp: "名胜地图",
+          text: "“买一份官方羊皮图，按著名地标依次游览。”",
+          hint: "按图索骥",
+          effects: { SN: -12, JP: -10 } // S & J
+        },
+        right: {
+          stamp: "随意穿梭",
+          text: "“扔掉地图，任由直觉带朕探访深巷的奇遇。”",
+          hint: "随心漫步",
+          effects: { SN: 12, JP: 10 } // N & P
+        }
+      },
+      {
+        speaker: "大主教",
+        avatar: AVATARS.sorcerer,
+        text: "“在圣堂的永恒辩论中，陛下认为帝国的永续依托于什么？”",
+        left: {
+          stamp: "粮仓与剑",
+          text: "“充盈的国库、坚固的城墙与历历可数的军力。”",
+          hint: "具象基业",
+          effects: { SN: -18 } // S
+        },
+        right: {
+          stamp: "信仰与光",
+          text: "“崇高的理想国图景、精神信仰与未来的希望。”",
+          hint: "形上宏愿",
+          effects: { SN: 18 } // N
+        }
+      },
+      {
+        speaker: "密探首领",
+        avatar: AVATARS.general,
+        text: "“密探截获了敌国的密信，其中夹带了大量杂乱无章的坊间八卦与传闻。陛下是否亲自过目？”",
+        left: {
+          stamp: "焚毁杂讯",
+          text: "“无聊的市井碎语，朕只要核心军情摘要。”",
+          hint: "清净屏蔽",
+          effects: { EI: 14 } // I
+        },
+        right: {
+          stamp: "津津有味",
+          text: "“呈上来！民间舆论与八卦正是人心的倒影！”",
+          hint: "体察市井",
+          effects: { EI: -14 } // E
+        }
+      },
+      {
+        speaker: "老御医",
+        avatar: AVATARS.alchemist,
+        text: "“宫廷太医署有条流传百年的用药戒律，严重拖慢了急症救治。陛下是否废除？”",
+        left: {
+          stamp: "恪守成法",
+          text: "“祖宗成法不可轻废，流程自有其防错深意。”",
+          hint: "敬畏规则",
+          effects: { JP: -15 } // J
+        },
+        right: {
+          stamp: "当机立断",
+          text: "“救人如救火！繁文缛节全部靠边站！”",
+          hint: "打破藩篱",
+          effects: { JP: 15 } // P
+        }
+      },
+      {
+        speaker: "命运女神 雕像",
+        avatar: AVATARS.sorcerer,
+        text: "“终焉之门已启。陛下，回顾你这一路的铁血裁决，驱动你的究竟是冰冷的理性，还是炙热的本心？”",
+        left: {
+          stamp: "绝对理性",
+          text: "“世界如棋局，唯有算无遗策的逻辑方能长存。”",
+          hint: "逻辑至上",
+          effects: { TF: -16 } // T
+        },
+        right: {
+          stamp: "心之所向",
+          text: "“顺从灵魂深处的直觉、善意与真实的情感。”",
+          hint: "情感共鸣",
+          effects: { TF: 16 } // F
+        }
+      }
+    ];
+
+    // MBTI Personas & Royal Lore
+    const personalities = {
+      "INTJ": { title: "幕后策划者 / 战略君王", desc: "你拥有全境最缜密的战略思维。在你眼中，帝国犹如一盘庞大而精密的棋局，每一步权衡都早已被你计算至十年之后。你崇尚秩序与理智，不怒自威。" },
+      "INFJ": { title: "先知圣者 / 灵性导师", desc: "你是最稀有而深邃的隐世圣者。你能洞悉每个人灵魂深处的渴望与苦难。你以温柔而坚毅的信念引导王国，无声地重塑着这片土地的命运。" },
+      "ISTJ": { title: "铁律守护者 / 帝国磐石", desc: "你是秩序与誓言的化身。务实、严苛、重诺如山。在风雨飘摇的乱世中，只要有你在，法令便不可动摇，城墙便坚不可摧。" },
+      "ISFJ": { title: "圣殿圣骑士 / 守护天使", desc: "你怀着最谦卑而伟大的奉献之心。你默默照料着臣民与疆土的细枝末节，如冬日暖阳般给予身边人最坚实的归宿感。" },
+      "INTP": { title: "奥术真理学者 / 大贤者", desc: "你是纯粹的求真者。世俗的权力无法打动你，唯有宇宙与魔法的底层法则能令你着迷。你的每一个奇思都在解构常识。" },
+      "INFP": { title: "诗篇吟唱者 / 理想守望者", desc: "你心中藏着一座永不沉沦的圣洁理想国。敏感、仁慈、怀抱无限同理心。你用诗歌与善意治愈着这片疮痍大陆上的旅人。" },
+      "ISTP": { title: "孤高机械宗师 / 绝影刺客", desc: "你沉着、冷静，动手能力举世无双。在最致命的危机面前，你从不慌张，总能以最精简利落的物理手段瞬间瓦解险境。" },
+      "ISFP": { title: "自由漫游者 / 自然艺术家", desc: "你追随山川与微风的节拍。厌恶世俗束缚，对美与生命有着超凡的感知力。你在静谧的旷野中作画，活在最真实的当下。" },
+      "ENTJ": { title: "征服领主 / 霸道帝皇", desc: "生而为王。你拥有气吞万里的宏大野心与铁血手腕。你善于整合一切混乱力量为己所用，引领铁骑开疆拓土，铸就万世帝国。" },
+      "ENFJ": { title: "光明启蒙者 / 太阳王", desc: "你浑身散发着神圣的领袖光芒。你懂得激发每一个凡人体内的英雄潜质，以崇高的愿景团结万众，是点亮暗夜的指路明灯。" },
+      "ESTJ": { title: "最高行政长官 / 秩序统帅", desc: "雷厉风行，讲求极致效率与绝对忠诚。你将整个王国的行政体系运转得犹如精工钟表，绝不容许任何推诿与混乱。" },
+      "ESFJ": { title: "盛宴主持者 / 仁德长者", desc: "你是联结所有人情感的黄金锁链。慷慨、热情、体贴入微。在你的宫廷里，每一位远客都能感受到宾至如归的温暖与尊重。" },
+      "ENTP": { title: "诡计智囊 / 权谋宗师", desc: "思维敏锐如闪电，热衷于推翻所有陈腐教条。你喜欢在言语与谋略的交锋中寻找智力快感，每一次奇招都让对手猝不及防。" },
+      "ENFP": { title: "追光探险家 / 灵感之泉", desc: "你是一个永远向往未知的自由灵魂。你的热情与乐观如同燎原之火，总能将最枯燥的征途变为充满欢声笑语的史诗传奇。" },
+      "ESTP": { title: "沙场先锋 / 破局狂徒", desc: "生于风暴，战于前线。你拥有无与伦比的现场决断力与应变嗅觉，擅长在瞬息万变的战局中出奇制胜，向死而生。" },
+      "ESFP": { title: "传奇吟游星宿 / 盛典主角", desc: "整个世界都是你倾情绽放的舞台。你活力四射，魅力无法抵挡，将每一天的统治都化为举国欢腾的盛大庆典。" }
+    };
+
+    // Game Runtime State
+    let currentCardIndex = 0;
+    let scores = { EI: 50, SN: 50, TF: 50, JP: 50 };
+
+    // DOM References
+    const activeCard = document.getElementById('active-card');
+    const underCard = document.getElementById('under-card');
+    const progressEl = document.getElementById('card-progress');
+    const cardAvatar = document.getElementById('card-avatar');
+    const cardSpeaker = document.getElementById('card-speaker');
+    const cardText = document.getElementById('card-text');
+    const choicePreviewBox = document.getElementById('choice-preview-box');
+    const choicePreviewText = document.getElementById('choice-preview-text');
+    const stampLeft = document.getElementById('stamp-left');
+    const stampRight = document.getElementById('stamp-right');
+    const hintLeft = document.getElementById('hint-left-action');
+    const hintRight = document.getElementById('hint-right-action');
+
+    // Faction Fluid Meters
+    const meterEI = document.getElementById('meter-fill-EI');
+    const meterSN = document.getElementById('meter-fill-SN');
+    const meterTF = document.getElementById('meter-fill-TF');
+    const meterJP = document.getElementById('meter-fill-JP');
+
+    const dotEI = document.getElementById('dot-EI');
+    const dotSN = document.getElementById('dot-SN');
+    const dotTF = document.getElementById('dot-TF');
+    const dotJP = document.getElementById('dot-JP');
+
+    // Labels
+    const labelE = document.getElementById('label-E');
+    const labelI = document.getElementById('label-I');
+    const labelS = document.getElementById('label-S');
+    const labelN = document.getElementById('label-N');
+    const labelT = document.getElementById('label-T');
+    const labelF = document.getElementById('label-F');
+    const labelJ = document.getElementById('label-J');
+    const labelP = document.getElementById('label-P');
+
+    // Swipe Physics Parameters
+    let startX = 0, startY = 0;
+    let currentX = 0, currentY = 0;
+    let isDragging = false;
+    const threshold = 90;
+
+    function loadCard(index) {
+      if (index >= deck.length) {
+        showResults();
+        return;
+      }
+      const item = deck[index];
+      cardSpeaker.textContent = item.speaker;
+      cardAvatar.innerHTML = item.avatar;
+      cardText.textContent = item.text;
+      progressEl.textContent = `${index + 1}/${deck.length}`;
+
+      stampLeft.textContent = item.left.stamp;
+      stampRight.textContent = item.right.stamp;
+      hintLeft.textContent = item.left.hint;
+      hintRight.textContent = item.right.hint;
+
+      // Reset transforms
+      activeCard.style.transform = `translate3d(0, 0, 0) rotate(0deg)`;
+      activeCard.style.opacity = '1';
+      choicePreviewBox.style.opacity = '0';
+      stampLeft.style.opacity = '0';
+      stampRight.style.opacity = '0';
+      hideIndicators();
+    }
+
+    function updateMeters() {
+      meterEI.style.height = `${scores.EI}%`;
+      meterSN.style.height = `${scores.SN}%`;
+      meterTF.style.height = `${scores.TF}%`;
+      meterJP.style.height = `${scores.JP}%`;
+    }
+
+    function showIndicators(effects) {
+      hideIndicators();
+      if (!effects) return;
+      Object.keys(effects).forEach(key => {
+        const dot = document.getElementById(`dot-${key}`);
+        if (dot) dot.style.opacity = '1';
+
+        const val = effects[key];
+        if (key === 'EI') {
+          if (val > 0) labelI.className = "text-amber-300 font-black scale-125 transition-transform";
+          else labelE.className = "text-amber-300 font-black scale-125 transition-transform";
+        } else if (key === 'SN') {
+          if (val > 0) labelN.className = "text-amber-300 font-black scale-125 transition-transform";
+          else labelS.className = "text-amber-300 font-black scale-125 transition-transform";
+        } else if (key === 'TF') {
+          if (val > 0) labelF.className = "text-amber-300 font-black scale-125 transition-transform";
+          else labelT.className = "text-amber-300 font-black scale-125 transition-transform";
+        } else if (key === 'JP') {
+          if (val > 0) labelP.className = "text-amber-300 font-black scale-125 transition-transform";
+          else labelJ.className = "text-amber-300 font-black scale-125 transition-transform";
+        }
+      });
+    }
+
+    function hideIndicators() {
+      [dotEI, dotSN, dotTF, dotJP].forEach(d => d.style.opacity = '0');
+      labelE.className = labelI.className = "font-bold transition-all";
+      labelS.className = labelN.className = "font-bold transition-all";
+      labelT.className = labelF.className = "font-bold transition-all";
+      labelJ.className = labelP.className = "font-bold transition-all";
+    }
+
+    // Touch & Mouse Drag Handlers
+    function onStart(e) {
+      isDragging = true;
+      const point = e.touches ? e.touches[0] : e;
+      startX = point.clientX;
+      startY = point.clientY;
+      activeCard.style.transition = 'none';
+    }
+
+    function onMove(e) {
+      if (!isDragging) return;
+      const point = e.touches ? e.touches[0] : e;
+      currentX = point.clientX - startX;
+      currentY = point.clientY - startY;
+
+      const rotation = currentX * 0.08;
+      activeCard.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) rotate(${rotation}deg)`;
+
+      // Scale background card on drag
+      const progress = Math.min(1, Math.abs(currentX) / threshold);
+      underCard.style.transform = `scale(${0.94 + progress * 0.06}) translateY(${10 - progress * 10}px)`;
+
+      const card = deck[currentCardIndex];
+      if (currentX < -20) {
+        // Dragging Left
+        choicePreviewText.textContent = card.left.text;
+        choicePreviewBox.style.opacity = '1';
+        choicePreviewBox.style.transform = 'scale(1)';
+        stampLeft.style.opacity = Math.min(1, Math.abs(currentX) / 60);
+        stampRight.style.opacity = '0';
+        showIndicators(card.left.effects);
+      } else if (currentX > 20) {
+        // Dragging Right
+        choicePreviewText.textContent = card.right.text;
+        choicePreviewBox.style.opacity = '1';
+        choicePreviewBox.style.transform = 'scale(1)';
+        stampRight.style.opacity = Math.min(1, currentX / 60);
+        stampLeft.style.opacity = '0';
+        showIndicators(card.right.effects);
+      } else {
+        choicePreviewBox.style.opacity = '0';
+        choicePreviewBox.style.transform = 'scale(0.95)';
+        stampLeft.style.opacity = '0';
+        stampRight.style.opacity = '0';
+        hideIndicators();
+      }
+    }
+
+    function onEnd() {
+      if (!isDragging) return;
+      isDragging = false;
+      activeCard.style.transition = 'transform 0.25s ease-out, opacity 0.25s';
+
+      if (currentX < -threshold) {
+        commitDecision('left');
+      } else if (currentX > threshold) {
+        commitDecision('right');
+      } else {
+        // Snap back
+        activeCard.style.transform = `translate3d(0, 0, 0) rotate(0deg)`;
+        underCard.style.transform = `scale(0.94) translateY(10px)`;
+        choicePreviewBox.style.opacity = '0';
+        stampLeft.style.opacity = '0';
+        stampRight.style.opacity = '0';
+        hideIndicators();
+      }
+    }
+
+    function commitDecision(dir) {
+      playSound('decision');
+      const card = deck[currentCardIndex];
+      const choice = dir === 'left' ? card.left : card.right;
+
+      Object.keys(choice.effects).forEach(k => {
+        scores[k] = Math.max(5, Math.min(95, scores[k] + choice.effects[k]));
+      });
+      updateMeters();
+
+      const flyX = dir === 'left' ? -450 : 450;
+      activeCard.style.transform = `translate3d(${flyX}px, ${currentY}px, 0) rotate(${flyX * 0.05}deg)`;
+      activeCard.style.opacity = '0';
+
+      setTimeout(() => {
+        currentCardIndex++;
+        loadCard(currentCardIndex);
+      }, 200);
+    }
+
+    // Attach Gestures
+    activeCard.addEventListener('mousedown', onStart);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onEnd);
+
+    activeCard.addEventListener('touchstart', onStart, { passive: true });
+    document.addEventListener('touchmove', onMove, { passive: true });
+    document.addEventListener('touchend', onEnd);
+
+    // Results Display
+    function showResults() {
+      playSound('victory');
+
+      const E_or_I = scores.EI >= 50 ? 'I' : 'E';
+      const S_or_N = scores.SN >= 50 ? 'N' : 'S';
+      const T_or_F = scores.TF >= 50 ? 'F' : 'T';
+      const J_or_P = scores.JP >= 50 ? 'P' : 'J';
+
+      const type = `${E_or_I}${S_or_N}${T_or_F}${J_or_P}`;
+      const result = personalities[type] || personalities["INTJ"];
+
+      document.getElementById('result-type').textContent = type;
+      document.getElementById('result-title').textContent = result.title;
+      document.getElementById('result-desc').textContent = result.desc;
+
+      // Stats
+      document.getElementById('res-val-E').textContent = `E ${Math.round(100 - scores.EI)}%`;
+      document.getElementById('res-val-I').textContent = `I ${Math.round(scores.EI)}%`;
+      document.getElementById('res-bar-EI').style.width = `${scores.EI}%`;
+
+      document.getElementById('res-val-S').textContent = `S ${Math.round(100 - scores.SN)}%`;
+      document.getElementById('res-val-N').textContent = `N ${Math.round(scores.SN)}%`;
+      document.getElementById('res-bar-SN').style.width = `${scores.SN}%`;
+
+      document.getElementById('res-val-T').textContent = `T ${Math.round(100 - scores.TF)}%`;
+      document.getElementById('res-val-F').textContent = `F ${Math.round(scores.TF)}%`;
+      document.getElementById('res-bar-TF').style.width = `${scores.TF}%`;
+
+      document.getElementById('res-val-J').textContent = `J ${Math.round(100 - scores.JP)}%`;
+      document.getElementById('res-val-P').textContent = `P ${Math.round(scores.JP)}%`;
+      document.getElementById('res-bar-JP').style.width = `${scores.JP}%`;
+
+      // Draw Royal Crest
+      document.getElementById('result-badge').innerHTML = `
+        <svg viewBox="0 0 100 100" class="w-16 h-16 text-amber-300 drop-shadow-[0_0_8px_rgba(212,175,55,0.6)]" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="50,6 90,24 90,76 50,94 10,76 10,24" stroke-linejoin="round"/>
+          <circle cx="50" cy="50" r="28" stroke-dasharray="3,3" stroke-width="1"/>
+          <text x="50" y="55" font-family="'Cinzel', serif" font-weight="900" font-size="14" fill="#f6e05e" text-anchor="middle">${type}</text>
+        </svg>
+      `;
+
+      document.getElementById('results-modal').classList.remove('hidden');
+    }
+
+    // Restart & Share
+    document.getElementById('btn-restart').addEventListener('click', () => {
+      playSound('swipe');
+      currentCardIndex = 0;
+      scores = { EI: 50, SN: 50, TF: 50, JP: 50 };
+      updateMeters();
+      document.getElementById('results-modal').classList.add('hidden');
+      loadCard(0);
+    });
+
+    document.getElementById('btn-share').addEventListener('click', () => {
+      playSound('decision');
+      const E_or_I = scores.EI >= 50 ? 'I' : 'E';
+      const S_or_N = scores.SN >= 50 ? 'N' : 'S';
+      const T_or_F = scores.TF >= 50 ? 'F' : 'T';
+      const J_or_P = scores.JP >= 50 ? 'P' : 'J';
+      const type = `${E_or_I}${S_or_N}${T_or_F}${J_or_P}`;
+      const result = personalities[type];
+
+      const text = `👑 我在《MBTI 王权：人格之骰》中加冕为【${type} - ${result.title}】！\n\n“${result.desc}”\n滑动卡牌，探寻你的命定人格！`;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => {
+          alert('加冕诏书已复制到剪贴板，快去昭告天下！');
+        });
+      } else {
+        alert(text);
+      }
+    });
+
+    // Boot
+    updateMeters();
+    loadCard(0);
+  </script>
+</body>
+</html>
