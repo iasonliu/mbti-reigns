@@ -642,11 +642,11 @@
 
         <!-- Action Bar: Share Poster & Restart -->
         <div class="relative z-20 mt-3 w-full flex gap-2">
-          <button id="btn-share-poster" class="btn-tactile flex-1 py-2.5 bg-gradient-to-r from-amber-600 via-amber-700 to-yellow-700 text-white font-black rounded-xl font-cinzel text-xs tracking-wider uppercase shadow-md flex items-center justify-center gap-1.5">
+          <button id="btn-share-poster" class="btn-tactile flex-1 py-2.5 bg-gradient-to-r from-amber-600 via-amber-700 to-yellow-700 text-white font-black rounded-xl font-cinzel text-xs tracking-wider uppercase shadow-md flex items-center justify-center gap-1.5" aria-label="复制加冕密令分享海报">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
-            <span>Generate Poster (导出海报)</span>
+            <span>分享加冕密令 (Share Decree)</span>
           </button>
-          <button id="btn-restart" class="btn-tactile w-12 py-2.5 bg-white/90 border border-amber-800/30 text-amber-900 rounded-xl flex items-center justify-center shadow-sm">
+          <button id="btn-restart" class="btn-tactile w-12 py-2.5 bg-white/90 border border-amber-800/30 text-amber-900 rounded-xl flex items-center justify-center shadow-sm" aria-label="重新开始统治" title="重新开始统治">
             <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
           </button>
         </div>
@@ -1480,10 +1480,12 @@
 
       if (navigator.clipboard) {
         navigator.clipboard.writeText(text).then(() => {
-          alert('✦ 皇家加冕密令已复制到剪贴板！可直接粘贴分享朋友圈与好友 ✦');
+          showSecretToast('✦ 加冕密令已复制，可直接发送好友或朋友圈 ✦');
+        }).catch(() => {
+          showSecretToast('✦ 复制失败，请截图保存分享 ✦');
         });
       } else {
-        alert(text);
+        showSecretToast('✦ 请截图保存加冕密令分享 ✦');
       }
     });
 
