@@ -37,7 +37,7 @@
     .font-cinzel { font-family: 'Cinzel', serif; }
     .font-cormorant { font-family: 'Cormorant Garamond', serif; }
 
-    /* Canvas background */
+    /* WebGL / Canvas background */
     #ember-canvas {
       position: fixed;
       inset: 0;
@@ -47,7 +47,7 @@
       z-index: 1;
     }
 
-    /* Film grain */
+    /* Film grain overlay */
     .grain-overlay {
       position: fixed;
       inset: 0;
@@ -71,8 +71,8 @@
       transform-style: preserve-3d;
       transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.2s ease;
       will-change: transform, box-shadow;
-      border-radius: 20px;
-      background: linear-gradient(175deg, #161424 0%, #0d0b16 60%, #06050a 100%);
+      border-radius: 22px;
+      background: linear-gradient(175deg, #171424 0%, #0d0b16 60%, #06050a 100%);
       box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.95), 
                   0 0 0 1px rgba(212, 175, 55, 0.45), 
                   inset 0 0 40px rgba(0, 0, 0, 0.9);
@@ -82,7 +82,7 @@
     .card-foil {
       position: absolute;
       inset: 0;
-      border-radius: 20px;
+      border-radius: 22px;
       pointer-events: none;
       background: radial-gradient(circle at var(--foil-x, 50%) var(--foil-y, 50%), 
                   rgba(254, 240, 138, 0.25) 0%, 
@@ -97,7 +97,7 @@
     .card-border-ornament {
       position: absolute;
       inset: 7px;
-      border-radius: 14px;
+      border-radius: 16px;
       border: 1px solid rgba(212, 175, 55, 0.3);
       pointer-events: none;
       box-shadow: inset 0 0 15px rgba(212, 175, 55, 0.08);
@@ -116,15 +116,20 @@
     .card-corner-bl { bottom: 10px; left: 10px; border-bottom: 2px solid; border-left: 2px solid; }
     .card-corner-br { bottom: 10px; right: 10px; border-bottom: 2px solid; border-right: 2px solid; }
 
-    /* Sanctuary Fluid Meters with Wave Effect */
+    /* Sanctuary Fluid Meters with Wave Canvas */
     .meter-capsule {
       position: relative;
       background: radial-gradient(circle, #191628 0%, #0b0914 100%);
       border: 1.5px solid rgba(212, 175, 55, 0.45);
       box-shadow: 0 4px 15px rgba(0,0,0,0.7), inset 0 2px 4px rgba(0,0,0,0.8);
     }
-    .meter-fluid {
-      transition: height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    .meter-canvas-wave {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      pointer-events: none;
     }
 
     /* Resonance Light Rays */
@@ -151,7 +156,7 @@
       position: absolute;
       top: 25px;
       padding: 6px 14px;
-      border: 2px solid;
+      border: 2.5px solid;
       border-radius: 10px;
       font-family: 'Cinzel', 'Noto Serif SC', serif;
       font-weight: 900;
@@ -193,11 +198,25 @@
       50% { filter: drop-shadow(0 0 16px rgba(254, 240, 138, 0.85)); }
     }
     .rune-pulse { animation: runePulse 3s infinite ease-in-out; }
+
+    /* Wax Seal Stamp */
+    .wax-seal {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #b91c1c 0%, #7f1d1d 70%, #450a0a 100%);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.3), inset 0 -2px 6px rgba(0,0,0,0.8);
+      border: 2px solid #ef4444;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
   </style>
 </head>
 <body class="flex flex-col justify-between items-center relative overflow-hidden select-none">
 
-  <!-- Ambient Dynamic Canvas & Noise -->
+  <!-- Ambient Dynamic Canvas (Ember & Weather Particles) & Noise -->
   <canvas id="ember-canvas"></canvas>
   <div class="grain-overlay"></div>
 
@@ -222,14 +241,14 @@
       </div>
     </div>
 
-    <!-- 4 Sanctuary Pillars (MBTI Realm Balances) -->
+    <!-- 4 Sanctuary Pillars (MBTI Realm Balances with Liquid Waves) -->
     <div class="grid grid-cols-4 gap-2 bg-slate-950/85 border border-amber-600/35 rounded-2xl p-2.5 backdrop-blur-xl shadow-[0_15px_35px_rgba(0,0,0,0.85)] relative">
       
       <!-- Pillar 1: E <-> I (神火与静夜) -->
       <div class="flex flex-col items-center gap-1 relative group">
         <div class="meter-capsule w-11 h-11 rounded-full overflow-hidden flex items-center justify-center relative">
-          <div id="meter-fluid-ei" class="meter-fluid absolute bottom-0 left-0 w-full bg-gradient-to-t from-violet-700 via-indigo-500 to-amber-400 opacity-85" style="height: 50%;"></div>
-          <svg class="w-5 h-5 text-amber-200 relative z-10 drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <canvas id="wave-ei" class="meter-canvas-wave"></canvas>
+          <svg class="w-5 h-5 text-amber-200 relative z-10 drop-shadow pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="5"/>
             <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
             <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
@@ -247,8 +266,8 @@
       <!-- Pillar 2: S <-> N (全知之眼) -->
       <div class="flex flex-col items-center gap-1 relative group">
         <div class="meter-capsule w-11 h-11 rounded-full overflow-hidden flex items-center justify-center relative">
-          <div id="meter-fluid-sn" class="meter-fluid absolute bottom-0 left-0 w-full bg-gradient-to-t from-emerald-700 via-teal-500 to-amber-300 opacity-85" style="height: 50%;"></div>
-          <svg class="w-5 h-5 text-amber-200 relative z-10 drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <canvas id="wave-sn" class="meter-canvas-wave"></canvas>
+          <svg class="w-5 h-5 text-amber-200 relative z-10 drop-shadow pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
             <circle cx="12" cy="12" r="3"/>
           </svg>
@@ -265,8 +284,8 @@
       <!-- Pillar 3: T <-> F (正义天平) -->
       <div class="flex flex-col items-center gap-1 relative group">
         <div class="meter-capsule w-11 h-11 rounded-full overflow-hidden flex items-center justify-center relative">
-          <div id="meter-fluid-tf" class="meter-fluid absolute bottom-0 left-0 w-full bg-gradient-to-t from-rose-800 via-pink-600 to-amber-400 opacity-85" style="height: 50%;"></div>
-          <svg class="w-5 h-5 text-amber-200 relative z-10 drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <canvas id="wave-tf" class="meter-canvas-wave"></canvas>
+          <svg class="w-5 h-5 text-amber-200 relative z-10 drop-shadow pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
             <path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/>
             <path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h18"/>
@@ -284,8 +303,8 @@
       <!-- Pillar 4: J <-> P (秩序沙漏) -->
       <div class="flex flex-col items-center gap-1 relative group">
         <div class="meter-capsule w-11 h-11 rounded-full overflow-hidden flex items-center justify-center relative">
-          <div id="meter-fluid-jp" class="meter-fluid absolute bottom-0 left-0 w-full bg-gradient-to-t from-amber-800 via-yellow-600 to-amber-200 opacity-85" style="height: 50%;"></div>
-          <svg class="w-5 h-5 text-amber-200 relative z-10 drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <canvas id="wave-jp" class="meter-canvas-wave"></canvas>
+          <svg class="w-5 h-5 text-amber-200 relative z-10 drop-shadow pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M5 22h14"/><path d="M5 2h14"/>
             <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/>
             <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/>
@@ -334,7 +353,7 @@
         </div>
       </div>
 
-      <!-- Card Center: Sacred Alchemical Sanctuary & High-Density Character Portrait -->
+      <!-- Card Center: Sacred Alchemical Sanctuary & Dynamic Character Portrait -->
       <div class="relative z-10 flex-1 flex items-center justify-center my-2 overflow-hidden rounded-xl border border-amber-500/25 bg-gradient-to-b from-slate-950 via-[#130f24] to-slate-950 shadow-inner group">
         
         <!-- Rotating Alchemical Geometry -->
@@ -390,11 +409,41 @@
     </div>
 
     <div class="text-[10px] text-amber-400/50 tracking-wider font-cinzel flex items-center gap-1">
-      <span>✦ SWIPE CARD TO RULE · REVEAL YOUR SOUL ✦</span>
+      <span>✦ SWIPE CARD TO RULE · AVOID REALM RUIN ✦</span>
     </div>
   </footer>
 
-  <!-- ==================== VICTORY / ENDING MODAL: PRESTIGE TAROT ==================== -->
+  <!-- ==================== SUDDEN RUIN / DEATH MODAL (REIGNS EXTENSION) ==================== -->
+  <div id="death-modal" class="fixed inset-0 bg-black/95 backdrop-blur-2xl z-50 flex flex-col items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-500 overflow-y-auto">
+    <div class="w-full max-w-sm relative flex flex-col items-center my-auto">
+      <div class="tarot-card w-full border-2 border-red-500/80 rounded-3xl p-6 flex flex-col items-center text-center shadow-[0_0_60px_rgba(239,68,68,0.4)] relative overflow-hidden bg-gradient-to-b from-[#250a10] via-[#150508] to-[#0a0204]">
+        
+        <div class="card-border-ornament" style="border-color: rgba(239, 68, 68, 0.4);"></div>
+
+        <div class="w-16 h-16 rounded-full bg-red-950/80 border-2 border-red-500 flex items-center justify-center text-red-400 my-2 shadow-[0_0_20px_rgba(239,68,68,0.5)]">
+          <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+          </svg>
+        </div>
+
+        <span class="font-cinzel text-[10px] font-black tracking-[0.25em] text-red-400 uppercase">
+          REALM COLLAPSE
+        </span>
+        <h2 id="death-title" class="font-cinzel text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-200 via-red-400 to-rose-600 my-1">
+          暴毙结局
+        </h2>
+        <p id="death-desc" class="text-xs text-red-200/90 leading-relaxed my-2 font-medium bg-black/50 p-3 rounded-xl border border-red-500/30">
+          神柱失衡，王权倾覆！
+        </p>
+
+        <button id="btn-restart-death" class="mt-4 w-full py-2.5 bg-gradient-to-r from-red-700 via-red-600 to-rose-800 text-white font-bold rounded-xl font-cinzel text-xs tracking-widest uppercase shadow-lg active:scale-95 transition-all">
+          Reincarnate & Try Again (再入轮回)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== VICTORY / ENDING MODAL: PRESTIGE POSTER ==================== -->
   <div id="result-modal" class="fixed inset-0 bg-black/95 backdrop-blur-2xl z-50 flex flex-col items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-500 overflow-y-auto">
     
     <div class="w-full max-w-sm relative flex flex-col items-center my-auto">
@@ -402,8 +451,8 @@
       <!-- Top Glow -->
       <div class="absolute -top-12 w-64 h-64 bg-amber-500/20 rounded-full blur-3xl pointer-events-none"></div>
 
-      <!-- Prestige MBTI Royal Tarot Card -->
-      <div class="tarot-card w-full border-2 border-amber-400/80 rounded-3xl p-5 flex flex-col items-center text-center shadow-[0_0_60px_rgba(212,175,55,0.3)] relative overflow-hidden bg-gradient-to-b from-[#1e172e] via-[#120d1c] to-[#080610]">
+      <!-- Exportable Poster Card Container -->
+      <div id="export-card-target" class="tarot-card w-full border-2 border-amber-400/80 rounded-3xl p-5 flex flex-col items-center text-center shadow-[0_0_60px_rgba(212,175,55,0.3)] relative overflow-hidden bg-gradient-to-b from-[#1e172e] via-[#120d1c] to-[#080610]">
         
         <div class="card-foil opacity-90"></div>
         <div class="card-border-ornament"></div>
@@ -428,9 +477,13 @@
           </div>
         </div>
 
-        <!-- Seal / Persona Art -->
-        <div class="relative z-20 w-24 h-24 my-1.5 rounded-full border-2 border-amber-500/60 bg-slate-950 flex items-center justify-center shadow-inner overflow-hidden">
-          <div id="result-icon" class="w-20 h-20 text-amber-300 flex items-center justify-center"></div>
+        <!-- Wax Seal / Royal Stamp -->
+        <div class="relative z-20 my-2 flex items-center justify-center">
+          <div class="wax-seal">
+            <svg viewBox="0 0 24 24" class="w-9 h-9 text-amber-200 drop-shadow" fill="none" stroke="currentColor" stroke-width="1.8">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+          </div>
         </div>
 
         <!-- Persona Monologue Description -->
@@ -460,10 +513,16 @@
           </div>
         </div>
 
-        <!-- Restart Button -->
-        <button id="btn-restart" class="relative z-20 mt-2 w-full py-2 bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-600 text-slate-950 font-bold rounded-xl font-cinzel text-xs tracking-widest uppercase shadow-lg active:scale-95 transition-all">
-          Re-Engage the Crown (重历王权)
-        </button>
+        <!-- Action Bar: Share Poster & Restart -->
+        <div class="relative z-20 mt-3 w-full flex gap-2">
+          <button id="btn-share-poster" class="flex-1 py-2.5 bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-600 text-slate-950 font-black rounded-xl font-cinzel text-xs tracking-wider uppercase shadow-lg active:scale-95 transition-all flex items-center justify-center gap-1.5">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            <span>Generate Poster (导出海报)</span>
+          </button>
+          <button id="btn-restart" class="w-12 py-2.5 bg-slate-900/90 border border-amber-500/40 text-amber-300 rounded-xl flex items-center justify-center active:scale-95 transition-all">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+          </button>
+        </div>
 
       </div>
     </div>
@@ -471,10 +530,11 @@
 
   <!-- ==================== SCRIPT ==================== -->
   <script>
-    /* 1. EMBER & GOLD SPARK PARTICLES (THREEUI EMBER STORM) */
+    /* 1. EMBER & WEATHER PARTICLE ENGINE */
     const canvas = document.getElementById('ember-canvas');
     const ctx = canvas.getContext('2d');
     let width, height, particles = [], sparks = [];
+    let currentWeather = 'ember'; // 'ember', 'snow', 'storm'
 
     function resizeCanvas() {
       width = canvas.width = window.innerWidth;
@@ -487,28 +547,35 @@
       constructor() { this.reset(); }
       reset() {
         this.x = Math.random() * width;
-        this.y = height + Math.random() * 40;
+        this.y = currentWeather === 'snow' ? -10 : height + Math.random() * 40;
         this.size = Math.random() * 2 + 0.8;
-        this.speedY = Math.random() * 0.7 + 0.3;
-        this.speedX = (Math.random() - 0.5) * 0.4;
+        this.speedY = currentWeather === 'snow' ? (Math.random() * 1.5 + 0.8) : (Math.random() * 0.7 + 0.3);
+        this.speedX = (Math.random() - 0.5) * 0.5;
         this.opacity = Math.random() * 0.6 + 0.2;
-        this.color = Math.random() > 0.4 ? 'rgba(212, 175, 55,' : 'rgba(168, 85, 247,';
+        this.color = currentWeather === 'snow' ? 'rgba(255, 255, 255,' : (Math.random() > 0.4 ? 'rgba(212, 175, 55,' : 'rgba(168, 85, 247,');
         this.life = 0;
         this.maxLife = Math.random() * 300 + 200;
       }
       update() {
-        this.y -= this.speedY;
-        this.x += this.speedX + Math.sin(this.life * 0.02) * 0.3;
+        if (currentWeather === 'snow') {
+          this.y += this.speedY;
+          this.x += this.speedX + Math.sin(this.life * 0.02) * 0.5;
+          if (this.y > height + 10) this.reset();
+        } else {
+          this.y -= this.speedY;
+          this.x += this.speedX + Math.sin(this.life * 0.02) * 0.3;
+          if (this.y < -10) this.reset();
+        }
         this.life++;
-        if (this.y < -10 || this.life > this.maxLife) this.reset();
+        if (this.life > this.maxLife) this.reset();
       }
       draw() {
         const curOp = this.opacity * (1 - this.life / this.maxLife);
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
         ctx.fillStyle = `${this.color}${curOp})`;
-        ctx.shadowBlur = 6;
-        ctx.shadowColor = '#d4af37';
+        ctx.shadowBlur = currentWeather === 'snow' ? 2 : 6;
+        ctx.shadowColor = currentWeather === 'snow' ? '#ffffff' : '#d4af37';
         ctx.fill();
       }
     }
@@ -518,8 +585,8 @@
         this.x = x;
         this.y = y;
         this.color = color || '#fbbf24';
-        this.vx = (Math.random() - 0.5) * 12;
-        this.vy = (Math.random() - 0.5) * 12;
+        this.vx = (Math.random() - 0.5) * 14;
+        this.vy = (Math.random() - 0.5) * 14;
         this.size = Math.random() * 3 + 1.5;
         this.alpha = 1;
         this.decay = Math.random() * 0.04 + 0.02;
@@ -527,7 +594,7 @@
       update() {
         this.x += this.vx;
         this.y += this.vy;
-        this.vy += 0.2; // gravity
+        this.vy += 0.25;
         this.alpha -= this.decay;
       }
       draw() {
@@ -543,14 +610,14 @@
       }
     }
 
-    for (let i = 0; i < 40; i++) {
+    for (let i = 0; i < 45; i++) {
       const p = new Particle();
       p.y = Math.random() * height;
       particles.push(p);
     }
 
     function createSparkExplosion(x, y, color) {
-      for (let i = 0; i < 20; i++) {
+      for (let i = 0; i < 24; i++) {
         sparks.push(new SparkBurst(x, y, color));
       }
     }
@@ -567,7 +634,59 @@
     }
     animateParticles();
 
-    /* 2. AUDIO SYNTHESIZER */
+    /* 2. LIQUID METABALL WAVE FOR SANCTUARY METERS */
+    function initWaveCanvas(canvasId, gradientColors) {
+      const c = document.getElementById(canvasId);
+      const cx = c.getContext('2d');
+      c.width = 44;
+      c.height = 44;
+      let step = 0;
+
+      function render(scoreRatio) {
+        cx.clearRect(0, 0, 44, 44);
+        step += 0.05;
+        const fillLevel = 44 - (scoreRatio * 44);
+
+        cx.save();
+        cx.beginPath();
+        cx.arc(22, 22, 21, 0, Math.PI * 2);
+        cx.clip();
+
+        const grad = cx.createLinearGradient(0, 44, 0, 0);
+        grad.addColorStop(0, gradientColors[0]);
+        grad.addColorStop(0.6, gradientColors[1]);
+        grad.addColorStop(1, gradientColors[2]);
+
+        cx.fillStyle = grad;
+        cx.beginPath();
+        cx.moveTo(0, fillLevel);
+        for (let x = 0; x <= 44; x++) {
+          const y = fillLevel + Math.sin(x * 0.2 + step) * 2;
+          cx.lineTo(x, y);
+        }
+        cx.lineTo(44, 44);
+        cx.lineTo(0, 44);
+        cx.closePath();
+        cx.fill();
+        cx.restore();
+      }
+      return render;
+    }
+
+    const renderWaveEI = initWaveCanvas('wave-ei', ['#4338ca', '#6366f1', '#fbbf24']);
+    const renderWaveSN = initWaveCanvas('wave-sn', ['#047857', '#14b8a6', '#fef08a']);
+    const renderWaveTF = initWaveCanvas('wave-tf', ['#881337', '#e11d48', '#fbbf24']);
+    const renderWaveJP = initWaveCanvas('wave-jp', ['#78350f', '#d97706', '#fde047']);
+
+    function updateLiquidMeters() {
+      renderWaveEI(scores.EI / 100);
+      renderWaveSN(scores.SN / 100);
+      renderWaveTF(scores.TF / 100);
+      renderWaveJP(scores.JP / 100);
+    }
+    setInterval(updateLiquidMeters, 33);
+
+    /* 3. AUDIO SYNTHESIZER */
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     function playTone(type) {
       if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -586,13 +705,22 @@
         osc.start(now);
         osc.stop(now + 0.13);
       } else if (type === 'decision') {
+        // Wax Stamp heavy impact + chime
         osc.type = 'triangle';
-        osc.frequency.setValueAtTime(380, now);
-        osc.frequency.exponentialRampToValueAtTime(760, now + 0.25);
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        osc.frequency.setValueAtTime(120, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.2);
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
         osc.start(now);
-        osc.stop(now + 0.26);
+        osc.stop(now + 0.22);
+      } else if (type === 'death') {
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(160, now);
+        osc.frequency.linearRampToValueAtTime(30, now + 0.6);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+        osc.start(now);
+        osc.stop(now + 0.65);
       } else if (type === 'victory') {
         [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
           const o = audioCtx.createOscillator();
@@ -609,135 +737,112 @@
       }
     }
 
-    /* 3. HIGH-AESTHETIC MEDIEVAL TAROT CHARACTER ARTWORKS */
+    /* 4. HIGH-AESTHETIC MEDIEVAL TAROT ARTWORKS */
     const AVATARS = {
-      // 弄臣 派特 (The Jester / Trickster)
       jester: `<svg viewBox="0 0 120 120" class="w-full h-full text-pink-400 drop-shadow-[0_0_15px_rgba(244,114,182,0.6)]">
-        <!-- Dual Crescent Bells Cap -->
         <path d="M60 25 C45 10 20 18 15 38 C28 42 42 35 48 45" fill="#2d1028" stroke="#f472b6" stroke-width="2" stroke-linejoin="round"/>
         <path d="M60 25 C75 10 100 18 105 38 C92 42 78 35 72 45" fill="#2d1028" stroke="#f472b6" stroke-width="2" stroke-linejoin="round"/>
         <circle cx="14" cy="38" r="4" fill="#fbbf24" stroke="#d97706" stroke-width="1.5"/>
         <circle cx="106" cy="38" r="4" fill="#fbbf24" stroke="#d97706" stroke-width="1.5"/>
-        <!-- Face Contour -->
         <path d="M38 45 C38 35 82 35 82 45 C82 72 74 88 60 92 C46 88 38 72 38 45 Z" fill="#180e22" stroke="#f472b6" stroke-width="2"/>
-        <!-- Harlequin Mask Eyes -->
         <polygon points="44,52 54,46 52,56 46,58" fill="#fbbf24"/>
         <polygon points="76,52 66,46 68,56 74,58" fill="#fbbf24"/>
-        <!-- Mysterious Smirk -->
         <path d="M48 72 Q60 84 72 72" fill="none" stroke="#f43f5e" stroke-width="2.5" stroke-linecap="round"/>
         <polygon points="60,94 48,110 72,110" fill="#3b0728" stroke="#f472b6" stroke-width="1.5"/>
       </svg>`,
 
-      // 大元帅 雷奥 (The High Marshal)
       marshal: `<svg viewBox="0 0 120 120" class="w-full h-full text-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.6)]">
-        <!-- Full Great Helm Plume -->
         <path d="M60 12 C60 12 75 10 82 25 C74 24 68 28 65 35" fill="none" stroke="#ef4444" stroke-width="3" stroke-linecap="round"/>
-        <!-- Steel Helm Outer -->
         <polygon points="60,24 88,38 84,82 60,102 36,82 32,38" fill="#181520" stroke="#f59e0b" stroke-width="2.5" stroke-linejoin="round"/>
-        <!-- Gilded Crown Brow -->
         <polygon points="40,42 48,34 60,40 72,34 80,42 78,50 42,50" fill="#3d2b07" stroke="#fbbf24" stroke-width="1.5"/>
-        <!-- T-Visor Slit -->
         <path d="M42 58 H78 M60 58 V80" stroke="#fef08a" stroke-width="3.5" stroke-linecap="round"/>
-        <!-- Gorget Plate -->
         <path d="M30 88 L60 108 L90 88" fill="none" stroke="#d97706" stroke-width="2.5"/>
       </svg>`,
 
-      // 大主教 塞莱斯 (The Sacred Hierophant)
       bishop: `<svg viewBox="0 0 120 120" class="w-full h-full text-indigo-300 drop-shadow-[0_0_15px_rgba(165,180,252,0.6)]">
-        <!-- Sacred Halo -->
         <circle cx="60" cy="60" r="46" fill="none" stroke="#818cf8" stroke-width="1.5" stroke-dasharray="3 4" opacity="0.6"/>
-        <!-- Papal Mitre -->
         <path d="M60 14 C42 35 38 65 38 86 L82 86 C82 65 78 35 60 14 Z" fill="#101428" stroke="#a5b4fc" stroke-width="2.5"/>
-        <!-- Mitre Split -->
         <path d="M60 14 V70" stroke="#fbbf24" stroke-width="2"/>
         <circle cx="60" cy="38" r="5" fill="#fcd34d" stroke="#d97706" stroke-width="1.5"/>
-        <!-- Eye of Providence in Mitre -->
         <path d="M48 62 Q60 52 72 62 Q60 72 48 62 Z" fill="#1e1b4b" stroke="#fbbf24" stroke-width="1.5"/>
         <circle cx="60" cy="62" r="2.5" fill="#fef08a"/>
-        <!-- Robe Collar -->
         <path d="M30 92 L60 110 L90 92" fill="#1e1b4b" stroke="#818cf8" stroke-width="2"/>
       </svg>`,
 
-      // 王国内相 艾琳 (The Queen Consort / Regent)
       queen: `<svg viewBox="0 0 120 120" class="w-full h-full text-emerald-400 drop-shadow-[0_0_15px_rgba(52,211,153,0.6)]">
-        <!-- Crown Diadem -->
         <path d="M34 45 L40 25 L50 36 L60 22 L70 36 L80 25 L86 45 Z" fill="#064e3b" stroke="#34d399" stroke-width="2" stroke-linejoin="round"/>
         <circle cx="40" cy="23" r="2.5" fill="#fbbf24"/>
         <circle cx="60" cy="20" r="3.5" fill="#fef08a"/>
         <circle cx="80" cy="23" r="2.5" fill="#fbbf24"/>
-        <!-- Royal Veil & Silhouette -->
         <path d="M36 50 C30 75 42 98 60 102 C78 98 90 75 84 50" fill="#081c15" stroke="#34d399" stroke-width="2"/>
-        <!-- Emerald Pendant -->
         <polygon points="60,68 68,78 60,88 52,78" fill="#10b981" stroke="#a7f3d0" stroke-width="1.5"/>
         <line x1="60" y1="52" x2="60" y2="68" stroke="#fbbf24" stroke-width="1.5"/>
       </svg>`,
 
-      // 皇家炼金术士 (The Grand Alchemist)
       alchemist: `<svg viewBox="0 0 120 120" class="w-full h-full text-teal-300 drop-shadow-[0_0_15px_rgba(94,234,212,0.6)]">
-        <!-- Plague / Alchemist Beak Hood -->
         <path d="M60 18 C40 18 32 40 32 65 C32 88 50 102 60 102 C70 102 88 88 88 65 C88 40 80 18 60 18 Z" fill="#042f2e" stroke="#2dd4bf" stroke-width="2"/>
-        <!-- Brass Goggles -->
         <circle cx="46" cy="52" r="10" fill="#134e4a" stroke="#fbbf24" stroke-width="2"/>
         <circle cx="74" cy="52" r="10" fill="#134e4a" stroke="#fbbf24" stroke-width="2"/>
         <circle cx="46" cy="52" r="4" fill="#5eead4"/>
         <circle cx="74" cy="52" r="4" fill="#5eead4"/>
         <line x1="56" y1="52" x2="64" y2="52" stroke="#fbbf24" stroke-width="2"/>
-        <!-- Steam Flask Filter -->
         <path d="M50 78 C50 70 70 70 70 78 L74 95 H46 Z" fill="#115e59" stroke="#5eead4" stroke-width="1.5"/>
         <circle cx="60" cy="85" r="2" fill="#fef08a"/>
       </svg>`,
 
-      // 皇家占星学者 (The Royal Astrologer)
       astrologer: `<svg viewBox="0 0 120 120" class="w-full h-full text-purple-300 drop-shadow-[0_0_15px_rgba(216,180,254,0.6)]">
-        <!-- Armillary Sphere Rings -->
         <ellipse cx="60" cy="60" rx="44" ry="16" fill="none" stroke="#c084fc" stroke-width="1.8" transform="rotate(35 60 60)"/>
         <ellipse cx="60" cy="60" rx="44" ry="16" fill="none" stroke="#e9d5ff" stroke-width="1.8" transform="rotate(-35 60 60)"/>
         <ellipse cx="60" cy="60" rx="42" ry="42" fill="#120924" stroke="#a855f7" stroke-width="2"/>
-        <!-- Central Star Core -->
         <circle cx="60" cy="60" r="12" fill="#3b0764" stroke="#fbbf24" stroke-width="2"/>
         <circle cx="60" cy="60" r="5" fill="#fef08a"/>
-        <!-- Constellation Nodes -->
         <circle cx="36" cy="38" r="2.5" fill="#fff"/>
         <circle cx="84" cy="42" r="2.5" fill="#fff"/>
         <circle cx="78" cy="82" r="2.5" fill="#fff"/>
-        <line x1="36" y1="38" x2="60" y2="60" stroke="#c084fc" stroke-width="1" stroke-dasharray="2 2"/>
-        <line x1="84" y1="42" x2="60" y2="60" stroke="#c084fc" stroke-width="1" stroke-dasharray="2 2"/>
       </svg>`,
 
-      // 密探首领 影刃 (The Shadowblade / Spymaster)
       spymaster: `<svg viewBox="0 0 120 120" class="w-full h-full text-rose-400 drop-shadow-[0_0_15px_rgba(251,113,133,0.6)]">
-        <!-- Deep Cowl Hood -->
         <path d="M60 14 C35 14 26 42 26 80 L94 80 C94 42 85 14 60 14 Z" fill="#180710" stroke="#f43f5e" stroke-width="2.5"/>
-        <!-- Shadow Abyss Inside Hood -->
         <path d="M60 26 C42 26 36 50 36 78 H84 C84 50 78 26 60 26 Z" fill="#070205"/>
-        <!-- Glowing Assassin Dagger Eyes -->
         <path d="M42 54 L52 58 L42 62 Z" fill="#fb7185"/>
         <path d="M78 54 L68 58 L78 62 Z" fill="#fb7185"/>
-        <!-- Crossed Hidden Daggers -->
         <line x1="35" y1="95" x2="85" y2="65" stroke="#f43f5e" stroke-width="2.5" stroke-linecap="round"/>
         <line x1="85" y1="95" x2="35" y2="65" stroke="#f43f5e" stroke-width="2.5" stroke-linecap="round"/>
       </svg>`
     };
 
-    /* 4. 15 HIGH-TENSION MBTI DECISION SCENARIOS */
+    /* 5. DECISION DECK WITH WEATHER & BRANCHING FLAGS */
+    let storyFlags = { fundedAlchemist: false };
+
     const DECISIONS = [
       {
         speaker: "宫廷弄臣 派特",
         avatar: AVATARS.jester,
+        weather: "ember",
         text: "“陛下！今夜城堡大厅正举行千人盛宴，邻国贵族云集。您是去举杯高谈阔论，还是退回塔楼清修？”",
-        left: { stamp: "独处观星", text: "“喧嚣令人疲惫，传令闭门，朕要在星空下静思。”", hint: "内向蓄能", effects: { EI: 20 } },
-        right: { stamp: "举杯畅饮", text: "“备好御酒！与众卿痛饮方能彰显帝国威仪！”", hint: "外向共振", effects: { EI: -20 } }
+        left: { stamp: "独处观星", text: "“喧嚣令人疲惫，传令闭门，朕要在星空下静思。”", hint: "内向蓄能", effects: { EI: 22 } },
+        right: { stamp: "举杯畅饮", text: "“备好御酒！与众卿痛饮方能彰显帝国威仪！”", hint: "外向共振", effects: { EI: -22 } }
       },
       {
         speaker: "帝国大元帅 雷奥",
         avatar: AVATARS.marshal,
+        weather: "ember",
         text: "“两名战功赫赫的百夫长在营帐内拔刀互斗！陛下当如何圣裁？”",
-        left: { stamp: "军法铁律", text: "“依帝国军律从严惩办，法度不可因功而废！”", hint: "理性严明", effects: { TF: -20 } },
-        right: { stamp: "体恤抚慰", text: "“先赐御酒体察其委屈，安抚军心胜于生硬用刑。”", hint: "感性共情", effects: { TF: 20 } }
+        left: { stamp: "军法铁律", text: "“依帝国军律从严惩办，法度不可因功而废！”", hint: "理性严明", effects: { TF: -22 } },
+        right: { stamp: "体恤抚慰", text: "“先赐御酒体察其委屈，安抚军心胜于生硬用刑。”", hint: "感性共情", effects: { TF: 22 } }
+      },
+      {
+        speaker: "皇家炼金术士",
+        avatar: AVATARS.alchemist,
+        weather: "ember",
+        text: "“臣研发出一种未经验证的神秘魔导蒸汽机，可能让产能翻十倍，但也可能炸塌工坊！”",
+        left: { stamp: "稳妥改良", text: "“不可妄动，先基于现有水车工坊稳扎稳打。”", hint: "经验务实", effects: { SN: -20 }, onChoose: () => { storyFlags.fundedAlchemist = false; } },
+        right: { stamp: "跃入未知", text: "“立刻注资！真正的飞跃向来属于敢于想象之人！”", hint: "直觉探索", effects: { SN: 20 }, onChoose: () => { storyFlags.fundedAlchemist = true; } }
       },
       {
         speaker: "大主教 塞莱斯",
         avatar: AVATARS.bishop,
+        weather: "snow",
         text: "“在圣堂永恒的辩论中，陛下认为帝国的万世基业应当依托于什么？”",
         left: { stamp: "粮仓与剑", text: "“充盈的国库、坚厚的石墙与历历在目的军力。”", hint: "具象实感", effects: { SN: -20 } },
         right: { stamp: "宏愿信仰", text: "“超越现世的宏大图景、精神信仰与未来宏愿。”", hint: "形上直觉", effects: { SN: 20 } }
@@ -745,109 +850,118 @@
       {
         speaker: "王国内相 艾琳",
         avatar: AVATARS.queen,
+        weather: "ember",
         text: "“御前会议明日启程巡视边疆，内阁已呈上细化至日晷刻度的详尽法令日程。”",
-        left: { stamp: "严苛规制", text: "“准奏！行程必须严丝合缝，不容半分差池。”", hint: "计划秩序", effects: { JP: -20 } },
-        right: { stamp: "随兴应变", text: "“不必拘泥死板条条框框，走到哪便看到哪。”", hint: "灵活自发", effects: { JP: 20 } }
-      },
-      {
-        speaker: "皇家炼金术士",
-        avatar: AVATARS.alchemist,
-        text: "“臣研发出一种未经验证的神秘魔导蒸汽机，可能让产能翻十倍，但也可能炸塌工坊！”",
-        left: { stamp: "稳妥改良", text: "“不可妄动，先基于现有水车工坊稳扎稳打。”", hint: "经验务实", effects: { SN: -18 } },
-        right: { stamp: "跃入未知", text: "“立刻注资！真正的飞跃向来属于敢于想象之人！”", hint: "直觉探索", effects: { SN: 18 } }
+        left: { stamp: "严苛规制", text: "“准奏！行程必须严丝合缝，不容半分差池。”", hint: "计划秩序", effects: { JP: -22 } },
+        right: { stamp: "随兴应变", text: "“不必拘泥死板条条框框，走到哪便看到哪。”", hint: "灵活自发", effects: { JP: 22 } }
       },
       {
         speaker: "密探首领 影刃",
         avatar: AVATARS.spymaster,
+        weather: "ember",
         text: "“抓获了一名盗窃国库药剂的落魄盗贼，其动机是为了救治重病的老母。”",
-        left: { stamp: "依法惩处", text: "“盗窃即是重罪，若为私情开脱，法律将荡然无存。”", hint: "客观逻辑", effects: { TF: -18 } },
-        right: { stamp: "法外开恩", text: "“孝心可悯，赐药救人，改罚其入工坊做工抵罪。”", hint: "人情体恤", effects: { TF: 18 } }
+        left: { stamp: "依法惩处", text: "“盗窃即是重罪，若为私情开脱，法律将荡然无存。”", hint: "客观逻辑", effects: { TF: -20 } },
+        right: { stamp: "法外开恩", text: "“孝心可悯，赐药救人，改罚其入工坊做工抵罪。”", hint: "人情体恤", effects: { TF: 20 } }
       },
       {
         speaker: "皇家占星学者",
         avatar: AVATARS.astrologer,
+        weather: "snow",
         text: "“陛下独处冥思时，浮现于心头的常常是具体的往事琐碎，还是冥冥中的星轨命理？”",
-        left: { stamp: "现世物象", text: "“昨天的账目、粮草的储备以及眼前真实的臣民。”", hint: "具象落地", effects: { SN: -18 } },
-        right: { stamp: "命运启示", text: "“文明的隐喻、宇宙的终极意义与未来的命运走向。”", hint: "概念直觉", effects: { SN: 18 } }
+        left: { stamp: "现世物象", text: "“昨天的账目、粮草的储备以及眼前真实的臣民。”", hint: "具象落地", effects: { SN: -20 } },
+        right: { stamp: "命运启示", text: "“文明的隐喻、宇宙的终极意义与未来的命运走向。”", hint: "概念直觉", effects: { SN: 20 } }
       },
       {
         speaker: "帝国大元帅 雷奥",
         avatar: AVATARS.marshal,
+        weather: "ember",
         text: "“暴风雨即将来袭，皇城卫队的防汛轮值表是否立刻锁死、禁止私自换班？”",
-        left: { stamp: "铁令如山", text: "“立刻下达死令，任何人不得擅离指定岗位！”", hint: "刚性判断", effects: { JP: -18 } },
-        right: { stamp: "相机而动", text: "“各小队根据汛情险急自行机动协调支援。”", hint: "弹性适应", effects: { JP: 18 } }
+        left: { stamp: "铁令如山", text: "“立刻下达死令，任何人不得擅离指定岗位！”", hint: "刚性判断", effects: { JP: -20 } },
+        right: { stamp: "相机而动", text: "“各小队根据汛情险急自行机动协调支援。”", hint: "弹性适应", effects: { JP: 20 } }
+      },
+      {
+        // Emergent branch from Decision 3
+        get speaker() { return storyFlags.fundedAlchemist ? "皇家炼金术士" : "工匠行会 会长"; },
+        get avatar() { return storyFlags.fundedAlchemist ? AVATARS.alchemist : AVATARS.marshal; },
+        weather: "ember",
+        get text() {
+          return storyFlags.fundedAlchemist
+            ? "“陛下！您注资的魔导装置研制成功，但释放出狂暴能量！我们是就地解体还是全力开火？”"
+            : "“陛下，传统工坊工匠抗议税率过重，请求减免。内阁建议派兵压制。”";
+        },
+        left: { stamp: "平息稳控", text: "“安全第一，立刻平息风险！”", hint: "稳健控制", effects: { SN: -15, JP: -15 } },
+        right: { stamp: "冒险一试", text: "“拥抱未知的力量，全力推进！”", hint: "果敢进取", effects: { SN: 15, JP: 15 } }
       },
       {
         speaker: "宫廷弄臣 派特",
         avatar: AVATARS.jester,
+        weather: "ember",
         text: "“两国国书已签署。今晚有一场轻松非正式的私人沙龙，陛下是否愿意出席漫谈？”",
-        left: { stamp: "避席独处", text: "“公事已毕，朕乏了，外交辞令留给文官吧。”", hint: "收敛内省", effects: { EI: 18 } },
-        right: { stamp: "欣然赴会", text: "“正合我意！在推杯换盏中结识更多异邦朋友！”", hint: "热情社交", effects: { EI: -18 } }
+        left: { stamp: "避席独处", text: "“公事已毕，朕乏了，外交辞令留给文官吧。”", hint: "收敛内省", effects: { EI: 20 } },
+        right: { stamp: "欣然赴会", text: "“正合我意！在推杯换盏中结识更多异邦朋友！”", hint: "热情社交", effects: { EI: -20 } }
       },
       {
-        speaker: "大主教 塞莱斯",
+        speaker: "法务官 克罗索",
         avatar: AVATARS.bishop,
+        weather: "ember",
         text: "“一位功勋卓越的老臣犯了欺君之罪，但他是为了保护年轻皇子的名誉。”",
-        left: { stamp: "公事公办", text: "“欺君即是大逆，必须公开定罪以正视听。”", hint: "原则理性", effects: { TF: -18 } },
-        right: { stamp: "私下宽恕", text: "“深明其苦心，私下戒勉即可，莫伤忠臣之心。”", hint: "情理关怀", effects: { TF: 18 } }
+        left: { stamp: "公事公办", text: "“欺君即是大逆，必须公开定罪以正视听。”", hint: "原则理性", effects: { TF: -20 } },
+        right: { stamp: "私下宽恕", text: "“深明其苦心，私下戒勉即可，莫伤忠臣之心。”", hint: "情理关怀", effects: { TF: 20 } }
       },
       {
-        speaker: "皇家占星学者",
+        speaker: "大学士 莫尔",
         avatar: AVATARS.astrologer,
+        weather: "snow",
         text: "“皇家图书馆新进万卷藏书，陛下欲先编纂实用律法农书，还是形而上哲学玄典？”",
-        left: { stamp: "务实工典", text: "“农耕治水、筑城冶铁，实用之术才能救民于水火。”", hint: "实感务实", effects: { SN: -18 } },
-        right: { stamp: "哲学玄思", text: "“灵魂思辨、先知密卷，形上之光才能启迪万民。”", hint: "直觉深邃", effects: { SN: 18 } }
+        left: { stamp: "务实工典", text: "“农耕治水、筑城冶铁，实用之术才能救民于水火。”", hint: "实感务实", effects: { SN: -20 } },
+        right: { stamp: "哲学玄思", text: "“灵魂思辨、先知密卷，形上之光才能启迪万民。”", hint: "直觉深邃", effects: { SN: 20 } }
       },
       {
-        speaker: "皇家炼金术士",
+        speaker: "工匠行会 会长",
         avatar: AVATARS.alchemist,
+        weather: "ember",
         text: "“帝都大剧院的设计方案，陛下喜欢严格对称的古典规制，还是错落多变的先锋结构？”",
-        left: { stamp: "对称规整", text: "“秩序与严谨是对神圣王权最好的赞歌。”", hint: "秩序结构", effects: { JP: -18 } },
-        right: { stamp: "天马行空", text: "“打破对称！让未知的灵感自由挥洒！”", hint: "随性自由", effects: { JP: 18 } }
+        left: { stamp: "对称规整", text: "“秩序与严谨是对神圣王权最好的赞歌。”", hint: "秩序结构", effects: { JP: -20 } },
+        right: { stamp: "天马行空", text: "“打破对称！让未知的灵感自由挥洒！”", hint: "随性自由", effects: { JP: 20 } }
       },
       {
-        speaker: "王国内相 艾琳",
-        avatar: AVATARS.queen,
+        speaker: "游吟诗人 费奥",
+        avatar: AVATARS.jester,
+        weather: "ember",
         text: "“陛下处理朝政遭遇巨大困扰时，您更倾向于在众人激辩中寻找灵感，还是关门冥想？”",
-        left: { stamp: "闭门深思", text: "“退入静夜，唯有绝对的寂静能澄澈朕的心灵。”", hint: "内向沉淀", effects: { EI: 15 } },
-        right: { stamp: "群策群力", text: "“召集众卿！在思想的碰撞与交锋中点燃火花！”", hint: "外向迸发", effects: { EI: -15 } }
+        left: { stamp: "闭门深思", text: "“退入静夜，唯有绝对的寂静能澄澈朕的心灵。”", hint: "内向沉淀", effects: { EI: 18 } },
+        right: { stamp: "群策群力", text: "“召集众卿！在思想的碰撞与交锋中点燃火花！”", hint: "外向迸发", effects: { EI: -18 } }
       },
       {
-        speaker: "密探首领 影刃",
-        avatar: AVATARS.spymaster,
-        text: "“两家商会因契约漏洞产生纠纷，导致港口货物滞留。陛下裁决的准绳是？”",
-        left: { stamp: "契约铁律", text: "“字斟句酌，严格执行白纸黑字的契约条款。”", hint: "逻辑客观", effects: { TF: -15 } },
-        right: { stamp: "衡平情理", text: "“体察双方实际损失，寻找充满人情味的折中方案。”", hint: "人伦感性", effects: { TF: 15 } }
-      },
-      {
-        speaker: "皇家炼金术士",
-        avatar: AVATARS.alchemist,
-        text: "“太医署流传百年的用药戒律严重拖慢了急症救治。陛下是否废除？”",
-        left: { stamp: "恪守成法", text: "“祖宗成法不可轻废，繁杂程序自有其防错深意。”", hint: "敬畏规则", effects: { JP: -15 } },
-        right: { stamp: "当机立断", text: "“救人如救火！繁文缛节全部靠边站！”", hint: "打破藩篱", effects: { JP: 15 } }
+        speaker: "命运女神 雕像",
+        avatar: AVATARS.bishop,
+        weather: "snow",
+        text: "“终焉之门已启。陛下，回顾你这一路的铁血裁决，驱动你的究竟是冰冷的理性，还是炙热的本心？”",
+        left: { stamp: "绝对理性", text: "“世界如棋局，唯有算无遗策的逻辑方能长存。”", hint: "逻辑至上", effects: { TF: -20 } },
+        right: { stamp: "心之所向", text: "“顺从灵魂深处的直觉、善意与真实的情感。”", hint: "情感共鸣", effects: { TF: 20 } }
       }
     ];
 
     const PERSONALITIES = {
-      "INTJ": { title: "幕后执棋者 · 永夜先知", quote: "“以深邃洞察洞悉宿命之局，冷静运筹，于阴影中奠定王国千年之基。”", icon: AVATARS.astrologer },
-      "INTP": { title: "真理铸造者 · 孤高学者", quote: "“在逻辑的迷宫中寻找永恒定理，不为世俗所动，唯真理永存。”", icon: AVATARS.alchemist },
-      "ENTJ": { title: "铁血征服者 · 帝国骄阳", quote: "“目光所及皆为疆土，意志所向皆为臣民。以绝对权威重塑世间秩序。”", icon: AVATARS.marshal },
-      "ENTP": { title: "狂热变革者 · 混乱先锋", quote: "“规则只是为了被打破而存在。在未知的可能性中，跳起华丽的舞蹈。”", icon: AVATARS.jester },
-      "INFJ": { title: "神圣引路人 · 灵魂灯塔", quote: "“背负世人苦难，以无尽慈悲与超凡远见，在黑暗中指引群星归途。”", icon: AVATARS.bishop },
-      "INFP": { title: "孤芳筑梦者 · 圣殿诗人", quote: "“在心灵的荒原上守护最后一朵玫瑰，用纯粹的理想对抗冰冷的现实。”", icon: AVATARS.jester },
-      "ENFJ": { title: "救世执政官 · 圣光领袖", quote: "“汇聚万民心火，以炽热的信念与无私的号召力，铸就黄金盛世。”", icon: AVATARS.queen },
-      "ENFP": { title: "自由追光者 · 星弦歌者", quote: "“世界是万花筒般的冒险。以永无止境的热情，点亮每一个暗淡角落。”", icon: AVATARS.jester },
-      "ISTJ": { title: "帝国磐石 · 誓言守护者", quote: "“职责重于生命，誓言刻入石碑。以无声的坚守，撑起帝国不倒的脊梁。”", icon: AVATARS.marshal },
-      "ISFJ": { title: "静默守护者 · 圣堂之盾", quote: "“不求闻达于世，唯愿庇护身旁之人。温柔的坚守，是最坚固的城墙。”", icon: AVATARS.bishop },
-      "ESTJ": { title: "秩序主宰者 · 铁律执政", quote: "“没有规矩不成方圆。以铁腕执行高效规制，确保帝国精密运转。”", icon: AVATARS.queen },
-      "ESFJ": { title: "和乐守护者 · 盛宴之主", quote: "“让欢歌笑语传遍每一个村落，用温暖的纽带将所有人紧紧相连。”", icon: AVATARS.queen },
-      "ISTP": { title: "独行孤狼 · 熔炉匠师", quote: "“少说多做，手艺即是信仰。在冷静的审视中，精密解构世界。”", icon: AVATARS.alchemist },
-      "ISFP": { title: "自然隐士 · 灵境画师", quote: "“听风之呢喃，观雨之落英。在天地大美中，静静雕琢自我的灵魂。”", icon: AVATARS.astrologer },
-      "ESTP": { title: "雷霆破局者 · 荒野狂飙", quote: "“行胜于言，赢在当下！在危险的边缘起舞，用雷霆手段夺取胜利。”", icon: AVATARS.marshal },
-      "ESFP": { title: "极乐狂欢者 · 黄金舞台", quote: "“人生即是一场永不落幕的盛宴。尽情歌舞，将生命燃成最绚烂的焰火。”", icon: AVATARS.jester }
+      "INTJ": { title: "幕后执棋者 · 永夜先知", quote: "“以深邃洞察洞悉宿命之局，冷静运筹，于阴影中奠定王国千年之基。”" },
+      "INTP": { title: "真理铸造者 · 孤高学者", quote: "“在逻辑的迷宫中寻找永恒定理，不为世俗所动，唯真理永存。”" },
+      "ENTJ": { title: "铁血征服者 · 帝国骄阳", quote: "“目光所及皆为疆土，意志所向皆为臣民。以绝对权威重塑世间秩序。”" },
+      "ENTP": { title: "狂热变革者 · 混乱先锋", quote: "“规则只是为了被打破而存在。在未知的可能性中，跳起华丽的舞蹈。”" },
+      "INFJ": { title: "神圣引路人 · 灵魂灯塔", quote: "“背负世人苦难，以无尽慈悲与超凡远见，在黑暗中指引群星归途。”" },
+      "INFP": { title: "孤芳筑梦者 · 圣殿诗人", quote: "“在心灵的荒原上守护最后一朵玫瑰，用纯粹的理想对抗冰冷的现实。”" },
+      "ENFJ": { title: "救世执政官 · 圣光领袖", quote: "“汇聚万民心火，以炽热的信念与无私的号召力，铸就黄金盛世。”" },
+      "ENFP": { title: "自由追光者 · 星弦歌者", quote: "“世界是万花筒般的冒险。以永无止境的热情，点亮每一个暗淡角落。”" },
+      "ISTJ": { title: "帝国磐石 · 誓言守护者", quote: "“职责重于生命，誓言刻入石碑。以无声的坚守，撑起帝国不倒的脊梁。”" },
+      "ISFJ": { title: "静默守护者 · 圣堂之盾", quote: "“不求闻达于世，唯愿庇护身旁之人。温柔的坚守，是最坚固的城墙。”" },
+      "ESTJ": { title: "秩序主宰者 · 铁律执政", quote: "“没有规矩不成方圆。以铁腕执行高效规制，确保帝国精密运转。”" },
+      "ESFJ": { title: "和乐守护者 · 盛宴之主", quote: "“让欢歌笑语传遍每一个村落，用温暖的纽带将所有人紧紧相连。”" },
+      "ISTP": { title: "独行孤狼 · 熔炉匠师", quote: "“少说多做，手艺即是信仰。在冷静的审视中，精密解构世界。”" },
+      "ISFP": { title: "自然隐士 · 灵境画师", quote: "“听风之呢喃，观雨之落英。在天地大美中，静静雕琢自我的灵魂。”" },
+      "ESTP": { title: "雷霆破局者 · 荒野狂飙", quote: "“行胜于言，赢在当下！在危险的边缘起舞，用雷霆手段夺取胜利。”" },
+      "ESFP": { title: "极乐狂欢者 · 黄金舞台", quote: "“人生即是一场永不落幕的盛宴。尽情歌舞，将生命燃成最绚烂的焰火。”" }
     };
 
-    /* 5. STATE MANAGEMENT & GAME ENGINE */
+    /* 6. GAME ENGINE & REIGNS SUDDEN RUIN RULES */
     let currentIndex = 0;
     let scores = { EI: 50, SN: 50, TF: 50, JP: 50 };
     
@@ -866,11 +980,6 @@
     const btnTextLeft = document.getElementById('btn-text-left');
     const btnTextRight = document.getElementById('btn-text-right');
 
-    const meterEI = document.getElementById('meter-fluid-ei');
-    const meterSN = document.getElementById('meter-fluid-sn');
-    const meterTF = document.getElementById('meter-fluid-tf');
-    const meterJP = document.getElementById('meter-fluid-jp');
-
     const indEI = document.getElementById('ind-ei');
     const indSN = document.getElementById('ind-sn');
     const indTF = document.getElementById('ind-tf');
@@ -887,10 +996,12 @@
         return;
       }
       const item = DECISIONS[currentIndex];
+      currentWeather = item.weather || 'ember';
+
       cardSpeaker.textContent = item.speaker.toUpperCase();
       cardAvatar.innerHTML = item.avatar;
       cardText.textContent = item.text;
-      turnCounter.textContent = `${currentIndex + 1}/${DECISIONS.length}`;
+      turnCounter.textContent = `CHRONICLE ${currentIndex + 1}/${DECISIONS.length}`;
 
       btnTextLeft.textContent = item.left.stamp;
       btnTextRight.textContent = item.right.stamp;
@@ -920,28 +1031,46 @@
       if ('JP' in effects) { indJP.classList.remove('opacity-0'); rayJP.classList.add('active'); }
     }
 
-    function updateMeters() {
-      meterEI.style.height = `${scores.EI}%`;
-      meterSN.style.height = `${scores.SN}%`;
-      meterTF.style.height = `${scores.TF}%`;
-      meterJP.style.height = `${scores.JP}%`;
+    // Check if any pillar hit 0% or 100% (Reigns sudden death)
+    function checkSuddenRuin() {
+      if (scores.EI >= 98) return { title: "深渊隐遁 · 绝命死局", desc: "由于过度避世离群，帝国大臣与卫队误以为陛下已被深渊吞噬，政权被权臣篡夺！" };
+      if (scores.EI <= 2) return { title: "通宵狂欢 · 暴毙驾崩", desc: "夜夜盛宴痛饮高歌，精力透支过度，陛下在群臣欢呼中含笑长眠！" };
+      if (scores.TF <= 2) return { title: "铁面无情 · 禁卫叛乱", desc: "绝对冰冷的法令逼反了所有忠臣，禁卫军联合发难，将您软禁于高塔！" };
+      if (scores.TF >= 98) return { title: "过度泛爱 · 国库洗劫", desc: "因对所有人法外开恩，盗贼与伪善者搬空了国库，王国在温情中破产！" };
+      return null;
+    }
+
+    function triggerDeath(death) {
+      playTone('death');
+      document.getElementById('death-title').textContent = death.title;
+      document.getElementById('death-desc').textContent = death.desc;
+      const modal = document.getElementById('death-modal');
+      modal.classList.remove('pointer-events-none');
+      modal.classList.add('opacity-100');
     }
 
     function applyDecision(direction) {
       playTone('decision');
       const item = DECISIONS[currentIndex];
       const outcome = direction === 'left' ? item.left : item.right;
-      
-      // Spark Explosion on ruling
+
+      if (outcome.onChoose) outcome.onChoose();
+
+      // Spark Explosion
       const rect = activeCard.getBoundingClientRect();
       const sparkX = direction === 'left' ? rect.left + 50 : rect.right - 50;
       createSparkExplosion(sparkX, rect.top + 150, direction === 'left' ? '#f87171' : '#34d399');
 
       for (let k in outcome.effects) {
-        scores[k] = Math.max(5, Math.min(95, scores[k] + outcome.effects[k]));
+        scores[k] = Math.max(0, Math.min(100, scores[k] + outcome.effects[k]));
       }
-      updateMeters();
-      
+
+      const ruin = checkSuddenRuin();
+      if (ruin) {
+        triggerDeath(ruin);
+        return;
+      }
+
       activeCard.style.transition = 'transform 0.35s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.35s';
       const flyX = direction === 'left' ? -500 : 500;
       const flyRot = direction === 'left' ? -25 : 25;
@@ -1059,7 +1188,7 @@
     btnLeft.addEventListener('click', () => applyDecision('left'));
     btnRight.addEventListener('click', () => applyDecision('right'));
 
-    /* Result Showcase */
+    /* Result Showcase & Share Poster */
     function showResult() {
       playTone('victory');
       const E_or_I = scores.EI >= 50 ? 'I' : 'E';
@@ -1073,7 +1202,6 @@
       document.getElementById('result-type').textContent = type;
       document.getElementById('result-title').textContent = result.title;
       document.getElementById('result-quote').textContent = result.quote;
-      document.getElementById('result-icon').innerHTML = result.icon;
 
       document.getElementById('res-ei').textContent = `${E_or_I} (${E_or_I === 'I' ? scores.EI : 100 - scores.EI}%)`;
       document.getElementById('res-sn').textContent = `${S_or_N} (${S_or_N === 'N' ? scores.SN : 100 - scores.SN}%)`;
@@ -1085,17 +1213,40 @@
       modal.classList.add('opacity-100');
     }
 
-    document.getElementById('btn-restart').addEventListener('click', () => {
-      currentIndex = 0;
-      scores = { EI: 50, SN: 50, TF: 50, JP: 50 };
-      updateMeters();
-      renderCard();
-      const modal = document.getElementById('result-modal');
-      modal.classList.add('pointer-events-none');
-      modal.classList.remove('opacity-100');
+    // Share & Copy Poster
+    document.getElementById('btn-share-poster').addEventListener('click', () => {
+      const E_or_I = scores.EI >= 50 ? 'I' : 'E';
+      const S_or_N = scores.SN >= 50 ? 'N' : 'S';
+      const T_or_F = scores.TF >= 50 ? 'F' : 'T';
+      const J_or_P = scores.JP >= 50 ? 'P' : 'J';
+      const type = `${E_or_I}${S_or_N}${T_or_F}${J_or_P}`;
+      const res = PERSONALITIES[type] || PERSONALITIES["INTJ"];
+
+      const text = `👑 我在《MBTI 王权：人格之骰》中完成了王国统治，获得加冕神印：【${type} - ${res.title}】！\n\n“${res.quote}”\n\n你能守护王国不崩塌并探寻真我吗？来测测看：https://iasonliu.github.io/mbti-reigns/`;
+
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => {
+          alert('✦ 皇家加冕密令已复制到剪贴板！可直接粘贴分享朋友圈与好友 ✦');
+        });
+      } else {
+        alert(text);
+      }
     });
 
-    updateMeters();
+    function restartGame() {
+      currentIndex = 0;
+      scores = { EI: 50, SN: 50, TF: 50, JP: 50 };
+      storyFlags = { fundedAlchemist: false };
+      renderCard();
+      document.getElementById('result-modal').classList.add('pointer-events-none');
+      document.getElementById('result-modal').classList.remove('opacity-100');
+      document.getElementById('death-modal').classList.add('pointer-events-none');
+      document.getElementById('death-modal').classList.remove('opacity-100');
+    }
+
+    document.getElementById('btn-restart').addEventListener('click', restartGame);
+    document.getElementById('btn-restart-death').addEventListener('click', restartGame);
+
     renderCard();
   </script>
 </body>
