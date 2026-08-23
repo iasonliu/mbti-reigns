@@ -544,7 +544,7 @@
   </div>
 
   <!-- ==================== VICTORY / ENDING MODAL: PRESTIGE POSTER ==================== -->
-  <div id="result-modal" class="fixed inset-0 bg-stone-900/60 backdrop-blur-xl z-50 flex flex-col items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-500 overflow-y-auto">
+  <div id="result-modal" class="fixed inset-0 bg-stone-900/60 backdrop-blur-xl z-50 flex flex-col items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-500 overflow-y-auto hidden">
     
     <div class="w-full max-w-sm relative flex flex-col items-center my-auto">
       
@@ -1433,7 +1433,7 @@
       document.getElementById('res-jp').textContent = `${J_or_P} (${J_or_P === 'P' ? scores.JP : 100 - scores.JP}%)`;
 
       const modal = document.getElementById('result-modal');
-      modal.classList.remove('pointer-events-none');
+      modal.classList.remove('hidden', 'pointer-events-none');
       modal.classList.add('opacity-100');
     }
 
@@ -1462,7 +1462,7 @@
       scores = { EI: 50, SN: 50, TF: 50, JP: 50 };
       storyFlags = { fundedAlchemist: false, petDragon: false };
       renderCard();
-      document.getElementById('result-modal').classList.add('pointer-events-none');
+      document.getElementById('result-modal').classList.add('hidden', 'pointer-events-none');
       document.getElementById('result-modal').classList.remove('opacity-100');
       document.getElementById('death-modal').classList.add('pointer-events-none');
       document.getElementById('death-modal').classList.remove('opacity-100');
